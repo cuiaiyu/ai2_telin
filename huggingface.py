@@ -117,8 +117,9 @@ class HuggingFaceTokenizerLoader(TokenizerLoader):
     @classmethod
     def load(cls, model_type: str, model_weights: str, *args, **kargs) -> HuggingFaceTokenizerLoader:
         assert model_type in TOKENIZERS, f"Tokenizer model type {model_type} is not recognized."
+        tokenizer_dir = "large_roberta"
         return HuggingFaceTokenizerLoader(
-            TOKENIZERS[model_type].from_pretrained(model_weights, *args, cache_dir="./model_cache", **kargs))
+            TOKENIZERS[model_type].from_pretrained(tokenizer_dir, *args, cache_dir="./model_cache", **kargs))
 
     @property
     def SEP(self) -> str:
@@ -202,7 +203,7 @@ class HuggingFaceClassifier(LightningModule):
 
         if not os.path.exists(self.hparams.output_dir):
             os.mkdir(self.hparams.output_dir)
-        if self.hparams.task_name is not None:
+        if self.hparams.task_name2 is not None:
             if not os.path.exists(self.hparams.output_dir2):
                 os.mkdir(self.hparams.output_dir2)
 

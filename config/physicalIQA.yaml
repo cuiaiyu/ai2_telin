@@ -10,6 +10,19 @@ physicaliqa:
       lr: 5e-6
       batch_size: 4
       dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 4
+    lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_12000:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 4
+    mutimodal_lm_large_finetune_cc_cn_dc_30000:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 4
   default:
     seed: 42
     lr: 2e-5
