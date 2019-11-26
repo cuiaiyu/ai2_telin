@@ -35,6 +35,7 @@ from textbook.interface import *
 from textbook.utils import set_seed, get_default_hyperparameter
 
 import scipy.stats
+import random
 
 
 def mean_confidence_interval(data, confidence=0.95):
@@ -170,6 +171,22 @@ class HuggingFaceTokenizerLoader(TokenizerLoader):
         return self.tokenizer.tokenize(text)
 
 
+class MultiTaskDataset(torch.utils.data.Dataset):
+    def __init__(self, dataloaders, shuffle: bool=True):
+        self.data: List = []
+        for loader in dataloaders:
+            for batch in loader:
+                self.data.append(batch)
+        if shuffle:
+            random.shuffle(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+
 class HuggingFaceClassifier(LightningModule):
 
     def __init__(self, hparams):
@@ -185,6 +202,9 @@ class HuggingFaceClassifier(LightningModule):
 
         if not os.path.exists(self.hparams.output_dir):
             os.mkdir(self.hparams.output_dir)
+        if self.hparams.task_name is not None:
+            if not os.path.exists(self.hparams.output_dir2):
+                os.mkdir(self.hparams.output_dir2)
 
         # TODO: Change it to your own model loader
         self.encoder = HuggingFaceModelLoader.load(self.hparams.model_type, self.hparams.model_weight)
@@ -193,12 +213,16 @@ class HuggingFaceClassifier(LightningModule):
         self.linear = nn.Linear(self.encoder.dim, self.hparams.output_dimension)
         self.linear.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
         self.linear.bias.data.zero_()
+        if self.hparams.task2_separate_fc:
+            self.linear2 = nn.Linear(self.encoder.dim, self.hparams.output_dimension)
+            self.linear2.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
+            self.linear2.bias.data.zero_()
 
         # TODO: Change it to your own tokenizer loader
         self.tokenizer = HuggingFaceTokenizerLoader.load(
             self.hparams.tokenizer_type, self.hparams.tokenizer_weight, do_lower_case=self.hparams.do_lower_case)
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None):
+    def forward(self, input_ids, token_type_ids=None, attention_mask=None, task_id=None):
 
         # if input_ids is not None and token_type_ids is not None and attention_mask is not None:
         #     logger.debug(f"Device: {next(self.encoder.model.parameters()).device}")
@@ -209,11 +233,14 @@ class HuggingFaceClassifier(LightningModule):
             **{'input_ids': input_ids, 'token_type_ids': token_type_ids, 'attention_mask': attention_mask})
         output = torch.mean(outputs[0], dim=1).squeeze()
         output = self.dropout(output)
-        logits = self.linear(output)
+        if self.hparams.task2_separate_fc and task_id == 2:
+            logits = self.linear2(output)
+        else:
+            logits = self.linear(output)
 
         return logits.squeeze()
 
-    def intermediate(self, input_ids, token_type_ids=None, attention_mask=None):
+    def intermediate(self, input_ids, token_type_ids=None, attention_mask=None, task_id=None):
 
         # if input_ids is not None and token_type_ids is not None and attention_mask is not None:
         #     logger.debug(f"Device: {next(self.encoder.model.parameters()).device}")
@@ -233,12 +260,19 @@ class HuggingFaceClassifier(LightningModule):
 
     def training_step(self, data_batch, batch_i):
 
+        task2 = False
+        if 'task_id' in data_batch:
+            if data_batch['task_id'] is not None:
+                if data_batch['task_id'][0] == 2:
+                    task2 = True
+
         B, _, S = data_batch['input_ids'].shape
 
         logits = self.forward(**{
             'input_ids': data_batch['input_ids'].reshape(-1, S),
             'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
             'attention_mask': data_batch['attention_mask'].reshape(-1, S),
+            'task_id': 1 if not task2 else 2,
         })
         loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
 
@@ -246,18 +280,34 @@ class HuggingFaceClassifier(LightningModule):
         if self.trainer.use_dp:
             loss_val = loss_val.unsqueeze(0)
 
-        return {
+        train_res_dict = {
             'logits': logits.reshape(B, -1),
             'loss': loss_val / B,
         }
 
-    def validation_step(self, data_batch, batch_i):
+        if task2:
+            train_res_dict['progress'] = {
+                'loss_2': loss_val / B,
+            }
+
+        return train_res_dict
+
+    def validation_step(self, data_batch, batch_i, dataset_idx=None):
+
+        task2 = False
+        if 'task_id' in data_batch:
+            if data_batch['task_id'] is not None:
+                if data_batch['task_id'][0] == 2:
+                    task2 = True
+
         B, _, S = data_batch['input_ids'].shape
+        # print (data_batch['task_id'], batch_i, dataset_idx)
 
         logits = self.forward(**{
             'input_ids': data_batch['input_ids'].reshape(-1, S),
             'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
             'attention_mask': data_batch['attention_mask'].reshape(-1, S),
+            'task_id': 1 if not task2 else 2,
         })
         loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
 
@@ -272,13 +322,21 @@ class HuggingFaceClassifier(LightningModule):
             'batch_truth': data_batch['y'].reshape(-1)
         }
 
-    def test_step(self, data_batch, batch_i):
+    def test_step(self, data_batch, batch_i, dataset_idx=None):
+
+        task2 = False
+        if 'task_id' in data_batch:
+            if data_batch['task_id'] is not None:
+                if data_batch['task_id'][0] == 2:
+                    task2 = True
+
         B, _, S = data_batch['input_ids'].shape
 
         logits = self.forward(**{
             'input_ids': data_batch['input_ids'].reshape(-1, S),
             'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
             'attention_mask': data_batch['attention_mask'].reshape(-1, S),
+            'task_id': 1 if not task2 else 2,
         })
 
         return {
@@ -286,25 +344,68 @@ class HuggingFaceClassifier(LightningModule):
         }
 
     def validation_end(self, outputs):
+        multi_dataset = False
+        if type(outputs[0]) == list:
+            multi_dataset = True
 
-        truth = torch.cat([o['batch_truth'] for o in outputs], dim=0).reshape(-1)
-        logits = torch.cat([o['batch_logits'] for o in outputs], dim=0).reshape(truth.shape[0],
-                                                                                outputs[0]['batch_logits'].shape[1])
-        loss_sum = torch.cat([o['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
-        loss_sum = torch.sum(loss_sum, dim=0).reshape(-1)
+        if multi_dataset:
+            truth = torch.cat([o[0]['batch_truth'] for o in outputs], dim=0).reshape(-1)
+            logits = torch.cat([o[0]['batch_logits'] for o in outputs], dim=0).reshape(truth.shape[0],
+                                                                                    outputs[0][0]['batch_logits'].shape[1])
+            loss_sum = torch.cat([o[0]['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            loss_sum = torch.sum(loss_sum, dim=0).reshape(-1)
 
-        assert truth.shape[0] == sum([o['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+            assert truth.shape[0] == sum([o[0]['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
 
-        loss = self.loss(truth, logits)
+            loss = self.loss(truth, logits)
 
-        assert math.isclose(loss.item(), loss_sum.item(),
-                            abs_tol=0.01), f"Loss not equal: {loss.item()} VS. {loss_sum.item()}"
+            assert math.isclose(loss.item(), loss_sum.item(),
+                                abs_tol=0.01), f"Loss not equal: {loss.item()} VS. {loss_sum.item()}"
 
-        loss /= truth.shape[0]
-        loss_sum /= truth.shape[0]
+            loss /= truth.shape[0]
+            loss_sum /= truth.shape[0]
 
-        proba = F.softmax(logits, dim=-1)
-        pred = torch.argmax(proba, dim=-1).reshape(-1)
+            proba = F.softmax(logits, dim=-1)
+            pred = torch.argmax(proba, dim=-1).reshape(-1)
+        else:
+            truth = torch.cat([o['batch_truth'] for o in outputs], dim=0).reshape(-1)
+            logits = torch.cat([o['batch_logits'] for o in outputs], dim=0).reshape(truth.shape[0],
+                                                                                    outputs[0]['batch_logits'].shape[1])
+            loss_sum = torch.cat([o['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            loss_sum = torch.sum(loss_sum, dim=0).reshape(-1)
+
+            assert truth.shape[0] == sum([o['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+
+            loss = self.loss(truth, logits)
+
+            assert math.isclose(loss.item(), loss_sum.item(),
+                                abs_tol=0.01), f"Loss not equal: {loss.item()} VS. {loss_sum.item()}"
+
+            loss /= truth.shape[0]
+            loss_sum /= truth.shape[0]
+
+            proba = F.softmax(logits, dim=-1)
+            pred = torch.argmax(proba, dim=-1).reshape(-1)
+
+        if multi_dataset:
+            truth2 = torch.cat([o[1]['batch_truth'] for o in outputs], dim=0).reshape(-1)
+            logits2 = torch.cat([o[1]['batch_logits'] for o in outputs], dim=0).reshape(truth2.shape[0],
+                                                                                      outputs[0][1]['batch_logits'].shape[1])
+            loss_sum2 = torch.cat([o[1]['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            loss_sum2 = torch.sum(loss_sum2, dim=0).reshape(-1)
+
+            assert truth2.shape[0] == sum([o[1]['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+
+            loss2 = self.loss(truth2, logits2)
+
+            assert math.isclose(loss2.item(), loss_sum2.item(),
+                                abs_tol=0.01), f"Loss not equal: {loss.item()} VS. {loss_sum.item()}"
+
+            loss2 /= truth2.shape[0]
+            loss_sum2 /= truth2.shape[0]
+
+            proba2 = F.softmax(logits2, dim=-1)
+            pred2 = torch.argmax(proba2, dim=-1).reshape(-1)
 
         with open(os.path.join(self.hparams.output_dir, "dev-labels.lst"), "w") as output_file:
             output_file.write("\n".join(map(str, (truth + self.task_config[self.hparams.task_name][
@@ -316,6 +417,18 @@ class HuggingFaceClassifier(LightningModule):
 
         with open(os.path.join(self.hparams.output_dir, "dev-probabilities.lst"), "w") as output_file:
             output_file.write("\n".join(map(lambda l: '\t'.join(map(str, l)), proba.cpu().detach().numpy().tolist())))
+
+        if multi_dataset:
+            with open(os.path.join(self.hparams.output_dir2, "dev-labels.lst"), "w") as output_file2:
+                output_file2.write("\n".join(map(str, (truth2 + self.task_config[self.hparams.task_name2][
+                    'label_offset']).cpu().numpy().tolist())))
+
+            with open(os.path.join(self.hparams.output_dir2, "dev-predictions.lst"), "w") as output_file2:
+                output_file2.write("\n".join(
+                    map(str, (pred2 + self.task_config[self.hparams.task_name2]['label_offset']).cpu().numpy().tolist())))
+
+            with open(os.path.join(self.hparams.output_dir2, "dev-probabilities.lst"), "w") as output_file2:
+                output_file2.write("\n".join(map(lambda l: '\t'.join(map(str, l)), proba2.cpu().detach().numpy().tolist())))
 
         stats = []
         predl = pred.cpu().detach().numpy().tolist()
@@ -331,12 +444,36 @@ class HuggingFaceClassifier(LightningModule):
 
         _, lower, upper = mean_confidence_interval(stats, self.hparams.ci_alpha)
 
-        return {
+        if multi_dataset:
+            stats2 = []
+            predl2 = pred2.cpu().detach().numpy().tolist()
+            truthl2 = truth2.cpu().detach().numpy().tolist()
+
+            for _ in range(10000):
+                predl2 = pred2.cpu().detach().numpy().tolist()
+
+                indicies2 = np.random.randint(len(predl2), size=len(predl2))
+                sampled_pred2 = [predl2[i] for i in indicies2]
+                sampled_truth2 = [truthl2[i] for i in indicies2]
+                stats2.append(accuracy_score(sampled_truth2, sampled_pred2))
+
+            _2, lower2, upper2 = mean_confidence_interval(stats2, self.hparams.ci_alpha)
+
+        result_dict = {
             'val_loss': loss.item(),
             'val_acc': accuracy_score(truth.cpu().detach().numpy().tolist(), pred.cpu().detach().numpy().tolist()),
             'val_cil': lower,
             'val_ciu': upper,
         }
+
+        if multi_dataset:
+            result_dict['val_loss2'] = loss2.item()
+            result_dict['val_acc2'] = accuracy_score(truth2.cpu().detach().numpy().tolist(),
+                                                    pred2.cpu().detach().numpy().tolist())
+            result_dict['val_cil2'] = lower2
+            result_dict['val_ciu2'] = upper2
+
+        return result_dict
 
     def test_end(self, outputs):
         """
@@ -345,9 +482,18 @@ class HuggingFaceClassifier(LightningModule):
         :param outputs:
         :return: dic_with_metrics for tqdm
         """
-        logits = torch.cat([o['batch_logits'] for o in outputs], dim=0).reshape(-1, outputs[0]['batch_logits'].shape[1])
-        proba = F.softmax(logits, dim=-1)
-        pred = torch.argmax(proba, dim=-1).reshape(-1)
+        multi_dataset = False
+        if type(outputs[0]) == list:
+            multi_dataset = True
+
+        if multi_dataset:
+            logits = torch.cat([o[0]['batch_logits'] for o in outputs], dim=0).reshape(-1, outputs[0][0]['batch_logits'].shape[1])
+            proba = F.softmax(logits, dim=-1)
+            pred = torch.argmax(proba, dim=-1).reshape(-1)
+        else:
+            logits = torch.cat([o['batch_logits'] for o in outputs], dim=0).reshape(-1, outputs[0]['batch_logits'].shape[1])
+            proba = F.softmax(logits, dim=-1)
+            pred = torch.argmax(proba, dim=-1).reshape(-1)
 
         with open(os.path.join(self.hparams.output_dir, "predictions.lst"), "w") as output_file:
             output_file.write("\n".join(map(str, (pred + self.task_config[self.hparams.task_name][
@@ -355,6 +501,18 @@ class HuggingFaceClassifier(LightningModule):
 
         with open(os.path.join(self.hparams.output_dir, "probabilities.lst"), "w") as output_file:
             output_file.write("\n".join(map(lambda l: '\t'.join(map(str, l)), proba.cpu().detach().numpy().tolist())))
+
+        if multi_dataset:
+            logits2 = torch.cat([o[1]['batch_logits'] for o in outputs], dim=0).reshape(-1, outputs[0][1]['batch_logits'].shape[1])
+            proba2 = F.softmax(logits2, dim=-1)
+            pred2 = torch.argmax(proba2, dim=-1).reshape(-1)
+
+            with open(os.path.join(self.hparams.output_dir2, "predictions.lst"), "w") as output_file2:
+                output_file2.write("\n".join(map(str, (pred2 + self.task_config[self.hparams.task_name2][
+                    'label_offset']).cpu().detach().numpy().tolist())))
+
+            with open(os.path.join(self.hparams.output_dir2, "probabilities.lst"), "w") as output_file2:
+                output_file2.write("\n".join(map(lambda l: '\t'.join(map(str, l)), proba2.cpu().detach().numpy().tolist())))
 
         return {}
 
@@ -390,6 +548,31 @@ class HuggingFaceClassifier(LightningModule):
                                              shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
                                              )
 
+        if self.hparams.task_name2 is not None:
+            cache_dirs2 = download(self.task_config[self.hparams.task_name2]['urls'], self.hparams.task_cache_dir)
+            dataset2 = ClassificationDataset.load(cache_dir=cache_dirs2[0] if isinstance(cache_dirs2, list) else cache_dirs2,
+                                                  file_mapping=self.task_config[self.hparams.task_name2]['file_mapping'][dataset_name],
+                                                  task_formula=self.task_config[self.hparams.task_name2]['task_formula'],
+                                                  type_formula=self.task_config[self.hparams.task_name2]['type_formula'],
+                                                  preprocessor=self.tokenizer,
+                                                  pretokenized=self.task_config[self.hparams.task_name2].get('pretokenized', False),
+                                                  label_formula=self.task_config[self.hparams.task_name2].get('label_formula', None),
+                                                  label_offset=self.task_config[self.hparams.task_name2].get('label_offset', 0),
+                                                  label_transform=self.task_config[self.hparams.task_name2].get('label_transform', None),
+                                                  shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
+                                                  task_id=2)
+
+            dataloader = DataLoader(dataset, collate_fn=self.collate_fn,
+                shuffle=True, batch_size=self.hparams.batch_size)
+            dataloader2 = DataLoader(dataset2, collate_fn=self.collate_fn,
+                shuffle=True, batch_size=self.hparams.batch_size)
+            dataloaders = [dataloader, dataloader2]
+            multidatasets = MultiTaskDataset(dataloaders)
+            multi_dataloader = DataLoader(multidatasets,
+                                          collate_fn=lambda examples: examples[0],
+                                          shuffle=True, batch_size=1)
+            return multi_dataloader
+
         return DataLoader(dataset,
                           collate_fn=self.collate_fn,
                           shuffle=True, batch_size=self.hparams.batch_size)
@@ -404,6 +587,7 @@ class HuggingFaceClassifier(LightningModule):
         token_type_ids = []
         attention_mask = []
         y = None
+        task_ids = None
 
         for example in examples:
 
@@ -425,6 +609,8 @@ class HuggingFaceClassifier(LightningModule):
             attention_mask.append(example_attention_mask[..., :self.hparams.max_seq_len].transpose(0, 1))
             if example['y'] is not None:
                 y = [example['y']] if y is None else y + [example['y']]
+            if 'task_id' in example:
+                task_ids = [example['task_id']] if task_ids is None else task_ids + [example['task_id']]
 
         return {
             'tokens': tokens,
@@ -434,6 +620,7 @@ class HuggingFaceClassifier(LightningModule):
             'attention_mask': pad_sequence(attention_mask, batch_first=True, padding_value=padding_value).transpose(1,
                                                                                                                     2),
             'y': y if y is None else torch.from_numpy(np.asarray(y)).long(),
+            'task_id': task_ids if task_ids is None else torch.from_numpy(np.asarray(task_ids)).long(),
         }
 
     @pl.data_loader
@@ -451,13 +638,41 @@ class HuggingFaceClassifier(LightningModule):
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform',
                                                                                                           None),
                                              shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),)
+
+        if self.hparams.task_name2 is not None:
+            cache_dirs2 = download(self.task_config[self.hparams.task_name2]['urls'], self.hparams.task_cache_dir)
+            dataset2 = ClassificationDataset.load(cache_dir=cache_dirs2[-1] if isinstance(cache_dirs2, list) else cache_dirs2,
+                                                  file_mapping=self.task_config[self.hparams.task_name2]['file_mapping'][dataset_name],
+                                                  task_formula=self.task_config[self.hparams.task_name2]['task_formula'],
+                                                  type_formula=self.task_config[self.hparams.task_name2]['type_formula'],
+                                                  preprocessor=self.tokenizer,
+                                                  pretokenized=self.task_config[self.hparams.task_name2].get('pretokenized', False),
+                                                  label_formula=self.task_config[self.hparams.task_name2].get('label_formula', None),
+                                                  label_offset=self.task_config[self.hparams.task_name2].get('label_offset', 0),
+                                                  label_transform=self.task_config[self.hparams.task_name2].get('label_transform',
+                                                                                                                None),
+                                                  shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
+                                                  task_id=2,)
+
         if not sampling:
-            return DataLoader(dataset,
-                              collate_fn=self.collate_fn,
-                              shuffle=False, batch_size=self.hparams.batch_size)
+            dataloader = DataLoader(dataset,
+                                    collate_fn=self.collate_fn,
+                                    shuffle=False, batch_size=self.hparams.batch_size)
         else:
-            return DataLoader(dataset, collate_fn=self.collate_fn, sampler=RandomSampler(dataset, replacement=True),
-                              shuffle=False, batch_size=self.hparams.batch_size)
+            dataloader =  DataLoader(dataset, collate_fn=self.collate_fn, sampler=RandomSampler(dataset, replacement=True),
+                                     shuffle=False, batch_size=self.hparams.batch_size)
+
+        if self.hparams.task_name2 is not None:
+            if not sampling:
+                dataloader2 = DataLoader(dataset2,
+                                         collate_fn=self.collate_fn,
+                                         shuffle=False, batch_size=self.hparams.batch_size)
+            else:
+                dataloader2 =  DataLoader(dataset2, collate_fn=self.collate_fn, sampler=RandomSampler(dataset2, replacement=True),
+                                          shuffle=False, batch_size=self.hparams.batch_size)
+            return [dataloader, dataloader2]
+            
+        return dataloader
 
     @pl.data_loader
     def test_dataloader(self):
@@ -477,9 +692,31 @@ class HuggingFaceClassifier(LightningModule):
                                                                                                           None),
                                              shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),)
 
-        return DataLoader(dataset,
-                          collate_fn=self.collate_fn,
-                          shuffle=False, batch_size=self.hparams.batch_size)
+        if self.hparams.task_name2 is not None:
+            dataset2 = ClassificationDataset.load(cache_dir=self.hparams.test_input_dir2,
+                                                  file_mapping={'input_x': None},
+                                                  task_formula=self.task_config[self.hparams.task_name2]['task_formula'],
+                                                  type_formula=self.task_config[self.hparams.task_name2]['type_formula'],
+                                                  preprocessor=self.tokenizer,
+                                                  pretokenized=self.task_config[self.hparams.task_name2].get('pretokenized', False),
+                                                  label_formula=self.task_config[self.hparams.task_name2].get('label_formula', None),
+                                                  label_offset=self.task_config[self.hparams.task_name2].get('label_offset', 0),
+                                                  label_transform=self.task_config[self.hparams.task_name2].get('label_transform',
+                                                                                                                None),
+                                                  shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
+                                                  task_id=2,)
+
+        dataloader = DataLoader(dataset,
+                                collate_fn=self.collate_fn,
+                                shuffle=False, batch_size=self.hparams.batch_size)
+
+        if self.hparams.task_name2 is not None:
+            dataloader2 = DataLoader(dataset2,
+                                     collate_fn=self.collate_fn,
+                                     shuffle=False, batch_size=self.hparams.batch_size)
+            return [dataloader, dataloader2]
+
+        return dataloader
 
     @classmethod
     def load_from_metrics(cls, hparams, weights_path, tags_csv, on_gpu, map_location=None):
@@ -562,6 +799,10 @@ class HuggingFaceClassifier(LightningModule):
         task_group.add_argument('--task_name',
                                 choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr'],
                                 required=True)
+        task_group.add_argument('--task_name2', default=None,
+                                choices=['concept_net_qa', 'atomic_qa'],
+                                required=False)
+        task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
         task_group.add_argument('--task_config_file', type=str, required=True)
         task_group.add_argument('--task_cache_dir', type=str, required=True)
 
@@ -569,6 +810,7 @@ class HuggingFaceClassifier(LightningModule):
 
         parser.add_argument('--test_input_dir', type=str, required=False, default=None)
         parser.add_argument('--output_dir', type=str, required=False, default=None)
+        parser.add_argument('--output_dir2', type=str, required=False, default=None)
         parser.add_argument('--weights_path', type=str, required=False, default=None)
         parser.add_argument('--tags_csv', type=str, required=False, default=None)
 
