@@ -266,6 +266,7 @@ class HuggingFaceClassifier(LightningModule):
             if data_batch['task_id'] is not None:
                 if data_batch['task_id'][0] == 2:
                     task2 = True
+                    print (data_batch['input_ids'].shape); raise
 
         B, _, S = data_batch['input_ids'].shape
 
@@ -801,7 +802,7 @@ class HuggingFaceClassifier(LightningModule):
                                 choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
-                                choices=['concept_net_qa', 'atomic_qa'],
+                                choices=['cn_all_cs', 'atomic_qa'],
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
         task_group.add_argument('--task_config_file', type=str, required=True)

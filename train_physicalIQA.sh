@@ -10,7 +10,7 @@ MODEL_TYPE=roberta
 TASK_NAME=physicaliqa
 TASK_NAME2=cn_all_cs
 
-MODEL_WEIGHT="large_roberta"
+MODEL_WEIGHT="baseline_w_cn_all_cs_v1"
 
 python3 -W ignore train.py --model_type $MODEL_TYPE --model_weight $MODEL_WEIGHT \
   --task_config_file config/tasks.yaml \
