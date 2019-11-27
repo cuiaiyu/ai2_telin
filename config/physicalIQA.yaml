@@ -35,6 +35,11 @@ physicaliqa:
       batch_size: 4
       dropout: 0.1
       accumulate_grad_batches: 4
+    baseline_w_cn_all_cs_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
   default:
     seed: 42
     lr: 2e-5

@@ -266,7 +266,6 @@ class HuggingFaceClassifier(LightningModule):
             if data_batch['task_id'] is not None:
                 if data_batch['task_id'][0] == 2:
                     task2 = True
-                    print (data_batch['input_ids'].shape); raise
 
         B, _, S = data_batch['input_ids'].shape
 
@@ -351,13 +350,13 @@ class HuggingFaceClassifier(LightningModule):
             multi_dataset = True
 
         if multi_dataset:
-            truth = torch.cat([o[0]['batch_truth'] for o in outputs], dim=0).reshape(-1)
-            logits = torch.cat([o[0]['batch_logits'] for o in outputs], dim=0).reshape(truth.shape[0],
+            truth = torch.cat([o['batch_truth'] for o in outputs[0]], dim=0).reshape(-1)
+            logits = torch.cat([o['batch_logits'] for o in outputs[0]], dim=0).reshape(truth.shape[0],
                                                                                     outputs[0][0]['batch_logits'].shape[1])
-            loss_sum = torch.cat([o[0]['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            loss_sum = torch.cat([o['batch_loss'].reshape(-1) for o in outputs[0]], dim=0).reshape(-1)
             loss_sum = torch.sum(loss_sum, dim=0).reshape(-1)
 
-            assert truth.shape[0] == sum([o[0]['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+            assert truth.shape[0] == sum([o['batch_logits'].shape[0] for o in outputs[0]]), "Mismatch size"
 
             loss = self.loss(truth, logits)
 
@@ -390,13 +389,13 @@ class HuggingFaceClassifier(LightningModule):
             pred = torch.argmax(proba, dim=-1).reshape(-1)
 
         if multi_dataset:
-            truth2 = torch.cat([o[1]['batch_truth'] for o in outputs], dim=0).reshape(-1)
-            logits2 = torch.cat([o[1]['batch_logits'] for o in outputs], dim=0).reshape(truth2.shape[0],
-                                                                                      outputs[0][1]['batch_logits'].shape[1])
-            loss_sum2 = torch.cat([o[1]['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0).reshape(-1)
+            logits2 = torch.cat([o['batch_logits'] for o in outputs[1]], dim=0).reshape(truth2.shape[0],
+                                                                                      outputs[1][0]['batch_logits'].shape[1])
+            loss_sum2 = torch.cat([o['batch_loss'].reshape(-1) for o in outputs[1]], dim=0).reshape(-1)
             loss_sum2 = torch.sum(loss_sum2, dim=0).reshape(-1)
 
-            assert truth2.shape[0] == sum([o[1]['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+            assert truth2.shape[0] == sum([o['batch_logits'].shape[0] for o in outputs[1]]), "Mismatch size"
 
             loss2 = self.loss(truth2, logits2)
 
