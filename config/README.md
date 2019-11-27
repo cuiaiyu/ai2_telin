@@ -17,6 +17,25 @@ batch_size: 3
 log file: /home/nlg-05/telinwu/ai2/output/roberta-large_roberta-log/physicaliqa/version_0/metrics.csv
 ```
 
+3. `baseline` (server: hpc, gpu: 2 p100)  
+```bash
+lr: 5e-6
+batch_size: 8
+dropout: 0.5
+max_nb_epochs: 4
+log file: /home/nlg-05/telinwu/ai2/output/roberta-baseline-log/physicaliqa/version_0/metrics.csv
+```
+
+4. `baseline_grad_accum_2` (server: hpc, gpu: 2 p100)  
+```bash
+lr: 5e-6
+batch_size: 8
+dropout: 0.5
+max_nb_epochs: 4
+accumulate_grad_batches: 2
+log file: /home/nlg-05/telinwu/ai2/output/roberta-baseline_grad_accum_2-log/physicaliqa/version_0/metrics.csv
+```
+
 
 ## Ours v3
 1. `multi_large_finetuned_v3_26000_2` (server: hpc, gpu: 2 p100)
