@@ -110,6 +110,26 @@ accumulate_grad_batches: 1
 log file: /home/nlg-05/telinwu/ai2/output/roberta-multi_large_finetuned_v3_26000_10-log/physicaliqa/version_0/metrics.csv
 ```
 
+11. `multi_large_finetuned_v3_26000_11` (server: hpc, gpu: 1 k80)
+```bash
+lr: 5e-6
+batch_size: 4
+dropout: 0
+max_nb_epochs: 4
+accumulate_grad_batches: 2
+log file: /home/nlg-05/telinwu/ai2/output/roberta-multi_large_finetuned_v4_26000_11-log/physicaliqa/version_0/metrics.csv
+```
+
+12. `multi_large_finetuned_v3_26000_12` (server: hpc, gpu: 1 k80)
+```bash
+lr: 5e-6
+batch_size: 4
+dropout: 0
+max_nb_epochs: 4
+accumulate_grad_batches: 4
+log file: /home/nlg-05/telinwu/ai2/output/roberta-multi_large_finetuned_v4_26000_12-log/physicaliqa/version_0/metrics.csv
+```
+
 
 ## Ours with graphbert
 1. `lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000` (server: pluslab, gpu: 1 2080ti)
