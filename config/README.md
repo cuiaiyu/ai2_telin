@@ -36,6 +36,78 @@ accumulate_grad_batches: 2
 log file: /home/nlg-05/telinwu/ai2/output/roberta-baseline_grad_accum_2-log/physicaliqa/version_0/metrics.csv
 ```
 
+5. `baseline2` (server: hpc, gpu: 2 p100)  
+```bash
+lr: 5e-6
+batch_size: 8
+dropout: 0.1
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline2-log/physicaliqa/version_0/metrics.csv
+```
+
+6. `baseline3` (server: hpc, gpu: 2 p100)  
+```bash
+lr: 5e-6
+batch_size: 8
+dropout: 0
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline3-log/physicaliqa/version_0/metrics.csv
+```
+
+7. `baseline4` (server: hpc, gpu: 2 p100)  
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0.5
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline4-log/physicaliqa/version_0/metrics.csv
+```
+
+8. `baseline5` (server: hpc, gpu: 4 p100)  
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0.5
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline5-log/physicaliqa/version_0/metrics.csv
+```
+
+9. `baseline6` (server: hpc, gpu: 2 p100)
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline6-log/physicaliqa/version_0/metrics.csv
+```
+
+10. `baseline7` (server: hpc, gpu: 4 p100)  
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline7-log/physicaliqa/version_0/metrics.csv
+```
+
+11. `baseline8` (server: hpc, gpu: 2 p100)
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0.1
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline8-log/physicaliqa/version_0/metrics.csv
+```
+
+12. `baseline9` (server: hpc, gpu: 4 p100)  
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0.1
+max_nb_epochs: 3
+log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline9-log/physicaliqa/version_0/metrics.csv
+```
+
 
 ## Ours v3
 1. `multi_large_finetuned_v3_26000_2` (server: hpc, gpu: 2 p100)
