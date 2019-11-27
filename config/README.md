@@ -89,3 +89,13 @@ max_nb_epochs: 4
 accumulate_grad_batches: 2
 log file: /home/nlg-05/telinwu/ai2/output/roberta-multi_large_finetuned_v3_26000_8-log/physicaliqa/version_0/metrics.csv
 ```
+
+9. `multi_large_finetuned_v3_26000_9` (server: hpc, gpu: 2 p100)
+```bash
+lr: 5e-6
+batch_size: 16
+dropout: 0.1
+max_nb_epochs: 4
+accumulate_grad_batches: 2
+log file: /home/nlg-05/telinwu/ai2/output/roberta-multi_large_finetuned_v3_26000_9-log/physicaliqa/version_0/metrics.csv
+```
