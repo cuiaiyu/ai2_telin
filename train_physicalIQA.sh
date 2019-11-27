@@ -8,7 +8,7 @@
 
 MODEL_TYPE=roberta
 TASK_NAME=physicaliqa
-TASK_NAME2=concept_net_qa
+TASK_NAME2=cn_all_cs
 
 MODEL_WEIGHT="large_roberta"
 

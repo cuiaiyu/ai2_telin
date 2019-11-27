@@ -109,17 +109,17 @@ vcrqr:
     dev:
       dev_x: "val/qar.jsonl"
       dev_y: "val/labels.jsonl"
-concept_net_qa:
+cn_all_cs:
   urls:
-    - "https://storage.googleapis.com/ai2-mosaic/public/physicaliqa/physicaliqa-train-dev.zip"
-  task_formula: "[CLS] goal [SEP] sol1|sol2 [SEP]"
-  type_formula: "0 0 0 1 1"
+    - "https://storage.googleapis.com/ai2-mosaic/public/cn_all_cs/cn_all_cs-train-dev.zip"
+  task_formula: "[CLS] e1 [SEP] e2 [SEP] sol1|sol2|sol3|sol4|sol5|sol6|sol7 [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
   label_offset: 0
-  num_choices: 2
+  num_choices: 7
   file_mapping:
     train:
-      train_x: "physicaliqa-train-dev/train.jsonl"
-      train_y: "physicaliqa-train-dev/train-labels.lst"
+      train_x: "cn_all_cs-train-dev/train.jsonl"
+      train_y: "cn_all_cs-train-dev/train-labels.lst"
     dev:
-      dev_x: "physicaliqa-train-dev/dev.jsonl"
-      dev_y: "physicaliqa-train-dev/dev-labels.lst"
+      dev_x: "cn_all_cs-train-dev/dev.jsonl"
+      dev_y: "cn_all_cs-train-dev/dev-labels.lst"
