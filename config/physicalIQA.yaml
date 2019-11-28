@@ -4,14 +4,14 @@ physicaliqa:
       lr: 5e-6
       batch_size: 8
     large_roberta:
-      lr: 5e-6
-      batch_size: 4
+      lr: 1e-5
+      batch_size: 16
     lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000:
       lr: 5e-6
-      batch_size: 4
+      batch_size: 8
       dropout: 0.1
       accumulate_grad_batches: 2
-      max_nb_epochs: 4
+      max_nb_epochs: 3
     lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc:
       lr: 5e-6
       batch_size: 4
@@ -84,6 +84,21 @@ physicaliqa:
     baseline_w_cn_all_cs_v2:
       lr: 5e-6
       batch_size: 4
+      dropout: 0.5
+      accumulate_grad_batches: 1
+    baseline_w_cn_all_cs_v3:
+      lr: 5e-6
+      batch_size: 8
+      dropout: 0.5
+      accumulate_grad_batches: 1
+    baseline_w_cn_all_cs_60k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.5
+      accumulate_grad_batches: 1
+    baseline_w_cn_all_cs_v3_single_fc:
+      lr: 5e-6
+      batch_size: 8
       dropout: 0.5
       accumulate_grad_batches: 1
     multi_large_finetuned_v3_26000_w_cn_all_cs_v1:
