@@ -4,8 +4,8 @@ physicaliqa:
       lr: 5e-6
       batch_size: 8
     large_roberta:
-      lr: 5e-6
-      batch_size: 4
+      lr: 1e-5
+      batch_size: 16
     lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000:
       lr: 5e-6
       batch_size: 4
