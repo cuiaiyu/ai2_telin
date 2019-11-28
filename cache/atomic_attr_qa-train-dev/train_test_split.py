@@ -28,10 +28,10 @@ assert len(eval_lines) == len(eval_labs)
 print ("Number of data in train: {}".format(len(train_lines)))
 print ("Number of data in eval:  {}".format(len(eval_lines)))
 
-ft = open("train.jsonl", "w")
-lt = open("train-labels.lst", "w")
-fe = open("dev.jsonl", "w")
-le = open("dev-labels.lst", "w")
+ft = open("atomic_attr_qa-train-dev/train.jsonl", "w")
+lt = open("atomic_attr_qa-train-dev/train-labels.lst", "w")
+fe = open("atomic_attr_qa-train-dev/dev.jsonl", "w")
+le = open("atomic_attr_qa-train-dev/dev-labels.lst", "w")
 
 for line in train_lines:
     ft.write(line)
