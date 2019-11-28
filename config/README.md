@@ -110,7 +110,7 @@ log file: /home/nlg-05/telinwu/ai2_telin/output/roberta-baseline9-log/physicaliq
 
 
 ## Ours v3
-1. `multi_large_finetuned_v3_26000_2` (server: hpc, gpu: 2 p100)
+1. `multi_large_finetuned_v3_26000` (server: hpc, gpu: 2 p100)
 ```bash
 lr: 5e-6
 batch_size: 8

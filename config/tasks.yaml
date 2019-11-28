@@ -123,3 +123,17 @@ cn_all_cs:
     dev:
       dev_x: "cn_all_cs-train-dev/dev.jsonl"
       dev_y: "cn_all_cs-train-dev/dev-labels.lst"
+atomic_attr_qa:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/atomic_attr_qa/atomic_attr_qa-train-dev.zip"
+  task_formula: "[CLS] content [SEP] question [SEP] answerA|answerB|answerC [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "atomic_attr_qa-train-dev/train.jsonl"
+      train_y: "atomic_attr_qa-train-dev/train-labels.lst"
+    dev:
+      dev_x: "atomic_attr_qa-train-dev/dev.jsonl"
+      dev_y: "atomic_attr_qa-train-dev/dev-labels.lst"

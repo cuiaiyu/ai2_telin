@@ -80,6 +80,17 @@ physicaliqa:
       batch_size: 4
       dropout: 0.1
       accumulate_grad_batches: 2
+      max_nb_epochs: 4
+    baseline_w_cn_all_cs_v2:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.5
+      accumulate_grad_batches: 1
+    multi_large_finetuned_v3_26000_w_cn_all_cs_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0
+      accumulate_grad_batches: 1
   default:
     seed: 42
     lr: 2e-5
