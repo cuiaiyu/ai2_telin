@@ -8,3 +8,8 @@
 *log
 *output*
 train-local.sh
+large*
+lm_wi*
+mutimodal*
+*.sh
+baseline*

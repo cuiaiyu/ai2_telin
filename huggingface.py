@@ -350,13 +350,13 @@ class HuggingFaceClassifier(LightningModule):
             multi_dataset = True
 
         if multi_dataset:
-            truth = torch.cat([o[0]['batch_truth'] for o in outputs], dim=0).reshape(-1)
-            logits = torch.cat([o[0]['batch_logits'] for o in outputs], dim=0).reshape(truth.shape[0],
+            truth = torch.cat([o['batch_truth'] for o in outputs[0]], dim=0).reshape(-1)
+            logits = torch.cat([o['batch_logits'] for o in outputs[0]], dim=0).reshape(truth.shape[0],
                                                                                     outputs[0][0]['batch_logits'].shape[1])
-            loss_sum = torch.cat([o[0]['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            loss_sum = torch.cat([o['batch_loss'].reshape(-1) for o in outputs[0]], dim=0).reshape(-1)
             loss_sum = torch.sum(loss_sum, dim=0).reshape(-1)
 
-            assert truth.shape[0] == sum([o[0]['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+            assert truth.shape[0] == sum([o['batch_logits'].shape[0] for o in outputs[0]]), "Mismatch size"
 
             loss = self.loss(truth, logits)
 
@@ -389,13 +389,13 @@ class HuggingFaceClassifier(LightningModule):
             pred = torch.argmax(proba, dim=-1).reshape(-1)
 
         if multi_dataset:
-            truth2 = torch.cat([o[1]['batch_truth'] for o in outputs], dim=0).reshape(-1)
-            logits2 = torch.cat([o[1]['batch_logits'] for o in outputs], dim=0).reshape(truth2.shape[0],
-                                                                                      outputs[0][1]['batch_logits'].shape[1])
-            loss_sum2 = torch.cat([o[1]['batch_loss'].reshape(-1) for o in outputs], dim=0).reshape(-1)
+            truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0).reshape(-1)
+            logits2 = torch.cat([o['batch_logits'] for o in outputs[1]], dim=0).reshape(truth2.shape[0],
+                                                                                      outputs[1][0]['batch_logits'].shape[1])
+            loss_sum2 = torch.cat([o['batch_loss'].reshape(-1) for o in outputs[1]], dim=0).reshape(-1)
             loss_sum2 = torch.sum(loss_sum2, dim=0).reshape(-1)
 
-            assert truth2.shape[0] == sum([o[1]['batch_logits'].shape[0] for o in outputs]), "Mismatch size"
+            assert truth2.shape[0] == sum([o['batch_logits'].shape[0] for o in outputs[1]]), "Mismatch size"
 
             loss2 = self.loss(truth2, logits2)
 
@@ -801,7 +801,7 @@ class HuggingFaceClassifier(LightningModule):
                                 choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
-                                choices=['concept_net_qa', 'atomic_qa'],
+                                choices=['cn_all_cs', 'atomic_qa'],
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
         task_group.add_argument('--task_config_file', type=str, required=True)
