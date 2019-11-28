@@ -91,6 +91,11 @@ physicaliqa:
       batch_size: 8
       dropout: 0.5
       accumulate_grad_batches: 1
+    baseline_w_cn_all_cs_60k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.5
+      accumulate_grad_batches: 1
     baseline_w_cn_all_cs_v3_single_fc:
       lr: 5e-6
       batch_size: 8
