@@ -14,8 +14,8 @@ for lab in l:
 
 assert len(all_lines) == len(all_labs)
 
-eval_num = 1000
-train_num = len(all_lines)-1000
+eval_num = 1954
+train_num = len(all_lines)-1954
 
 train_lines = all_lines[eval_num:eval_num+train_num]
 train_labs = all_labs[eval_num:eval_num+train_num]
