@@ -435,7 +435,8 @@ class HuggingFaceClassifier(LightningModule):
         predl = pred.cpu().detach().numpy().tolist()
         truthl = truth.cpu().detach().numpy().tolist()
 
-        for _ in range(10000):
+        # for _ in range(10000):
+        for _ in range(1000):
             predl = pred.cpu().detach().numpy().tolist()
 
             indicies = np.random.randint(len(predl), size=len(predl))
@@ -707,6 +708,8 @@ class HuggingFaceClassifier(LightningModule):
                                                   shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
                                                   task_id=2,)
 
+        self.hparams.batch_size = 4
+        print (self.hparams.batch_size)
         dataloader = DataLoader(dataset,
                                 collate_fn=self.collate_fn,
                                 shuffle=False, batch_size=self.hparams.batch_size)
