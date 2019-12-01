@@ -802,10 +802,11 @@ class HuggingFaceClassifier(LightningModule):
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
                                 choices=['atomic_attr_qa_random_name',
+                                         'atomic_attr_qa',
                                          'atomic_which_one_qa',
                                          'atomic_temporal_qa',
                                          'cn_all_cs',
-                                         'atomic_attr_qa'],
+                                         'cn_all_cs_30k'],
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
         task_group.add_argument('--task_config_file', type=str, required=True)
