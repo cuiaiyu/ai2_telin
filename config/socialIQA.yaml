@@ -1,5 +1,17 @@
 socialiqa:
   roberta:
+    large_roberta_attr_qa_grad_accu_2: 
+      seed: 42
+      lr: 5e-6
+      dropout: 0.1
+      batch_size: 3
+      max_seq_len: 128
+      max_nb_epochs: 3
+      initializer_range: 0.02
+      weight_decay: 0.0
+      warmup_steps: 0
+      adam_epsilon: 1e-8
+      accumulate_grad_batches: 2
     large-atomic-50k:  
       seed: 42
       lr: 5e-6
