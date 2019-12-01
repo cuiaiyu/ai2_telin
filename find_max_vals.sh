@@ -6,12 +6,13 @@
 #SBATCH --mem-per-cpu=4g
 #SBATCH --partition=isi
 
-file_path="output/roberta-large_roberta_attr_qa_fc_false-log/socialiqa/version_0/metrics.csv"
-
+# file_path="output/roberta-large_roberta_attr_qa_fc_false-log/socialiqa/version_0/metrics.csv"
+file_path="output/roberta-large_roberta_attr_qa_random_name_fc_true-log/socialiqa/version_0/metrics.csv"
+# file_path="output/roberta-large_roberta_attr_qa_grad_accu_2-log/socialiqa/version_0/metrics.csv"
 
 cols_to_check="val_acc val_acc2"
 
 
-python3 find_max_val.py \
+python3 find_max_vals.py \
     -f $file_path \
     -c $cols_to_check
