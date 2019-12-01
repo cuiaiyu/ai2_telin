@@ -165,3 +165,17 @@ atomic_which_one_qa:
     dev:
       dev_x: "atomic_which_one_qa-train-dev/dev.jsonl"
       dev_y: "atomic_which_one_qa-train-dev/dev-labels.lst"
+atomic_attr_qa_random_name:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/atomic_attr_qa_random_name/atomic_attr_qa_random_name-train-dev.zip"
+  task_formula: "[CLS] content [SEP] question [SEP] answerA|answerB|answerC [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "atomic_attr_qa_random_name-train-dev/train.jsonl"
+      train_y: "atomic_attr_qa_random_name-train-dev/train-labels.lst"
+    dev:
+      dev_x: "atomic_attr_qa_random_name-train-dev/dev.jsonl"
+      dev_y: "atomic_attr_qa_random_name-train-dev/dev-labels.lst"
