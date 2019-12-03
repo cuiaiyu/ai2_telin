@@ -52,6 +52,7 @@ def compute_acc(in_f_pd, in_f_gt):
         if gt_ == pd_:
             acc += 1.0
         cnt += 1.0
+    print (acc, cnt)
     acc = acc / cnt * 100.0
 
     model_weight = in_f_pd.split("/")[-2].split("-")[1]
