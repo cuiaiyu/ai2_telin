@@ -275,6 +275,11 @@ physicaliqa:
       batch_size: 1
       dropout: 0.1
       accumulate_grad_batches: 1
+    baseline_w_cn_all_cs_bz12_accu2_dp1:
+      lr: 5e-6
+      batch_size: 12
+      dropout: 0.1
+      accumulate_grad_batches: 2
       max_nb_epochs: 4
   default:
     seed: 42
