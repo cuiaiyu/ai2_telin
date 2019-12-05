@@ -586,15 +586,15 @@ class HuggingFaceClassifier(LightningModule):
         elif multi_dataset and self.hparams.comet_cn_train100k:
             # truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0).reshape(-1)
             bz = outputs[1][0]['batch_truth'].shape[0]
-            logits2 = torch.cat([o['batch_logits'] for o in outputs[1]], dim=0)
+            # logits2 = torch.cat([o['batch_logits'] for o in outputs[1]], dim=0)
             loss_sum2 = torch.cat([o['batch_loss'].reshape(-1) for o in outputs[1]], dim=0).reshape(-1)
             loss_sum2 = torch.sum(loss_sum2, dim=0).reshape(-1)
             loss2 = loss_sum2
 
             loss2 /= outputs[1][0]['batch_truth'].shape[0]
 
-            proba2 = F.softmax(logits2, dim=-1)
-            pred2 = torch.argmax(proba2, dim=-1)
+            # proba2 = F.softmax(logits2, dim=-1)
+            # pred2 = torch.argmax(proba2, dim=-1)
 
         with open(os.path.join(self.hparams.output_dir, "dev-labels.lst"), "w") as output_file:
             output_file.write("\n".join(map(str, (truth + self.task_config[self.hparams.task_name][
