@@ -585,13 +585,15 @@ class HuggingFaceClassifier(LightningModule):
 
         elif multi_dataset and self.hparams.comet_cn_train100k:
             # truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0).reshape(-1)
-            bz = outputs[1][0]['batch_truth'].shape[0]
+            # truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0)
+            # bz = outputs[1][0]['batch_truth'].shape[0]
             # logits2 = torch.cat([o['batch_logits'] for o in outputs[1]], dim=0)
             loss_sum2 = torch.cat([o['batch_loss'].reshape(-1) for o in outputs[1]], dim=0).reshape(-1)
+            length = loss_sum2.shape[0]
             loss_sum2 = torch.sum(loss_sum2, dim=0).reshape(-1)
             loss2 = loss_sum2
 
-            loss2 /= outputs[1][0]['batch_truth'].shape[0]
+            loss2 /= length
 
             # proba2 = F.softmax(logits2, dim=-1)
             # pred2 = torch.argmax(proba2, dim=-1)
@@ -665,7 +667,8 @@ class HuggingFaceClassifier(LightningModule):
 
         elif multi_dataset and self.hparams.comet_cn_train100k:
             result_dict['comet_loss'] = loss2.item()
-            ppl = np.exp(loss2.cpu()) if loss2 < 300 else np.inf
+            # print (loss2.item(), loss2.cpu().item(), np.exp(loss2.cpu().item())); raise
+            ppl = np.exp(loss2.cpu()) if loss2.item() < 300 else np.inf
             result_dict['comet_ppl'] = ppl
 
         return result_dict
