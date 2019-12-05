@@ -272,9 +272,14 @@ physicaliqa:
       max_nb_epochs: 4
     roberta_w_cn_comet:
       lr: 5e-6
-      batch_size: 1
+      batch_size: 4
       dropout: 0.1
       accumulate_grad_batches: 1
+    roberta_w_cn_comet_v2:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
     baseline_w_cn_all_cs_bz12_accu2_dp1:
       lr: 5e-6
       batch_size: 12
