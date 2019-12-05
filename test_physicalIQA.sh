@@ -11,7 +11,8 @@ TASK_NAME=physicaliqa
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_30k"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256_v2"
-MODEL_WEIGHT="baseline8"
+# MODEL_WEIGHT="baseline8"
+MODEL_WEIGHT="lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc"
 
 # $PYTHON -W ignore eval.py --model_type $MODEL_TYPE \
 # $PYTHON -W ignore new_eval.py --model_type $MODEL_TYPE \
@@ -23,7 +24,7 @@ $PYTHON -W ignore test.py --model_type $MODEL_TYPE \
   --running_config_file config/hyparams.yaml \
   --test_input_dir ./cache/$TASK_NAME-test/$TASK_NAME-test/ \
   --output_dir output/$MODEL_TYPE-$MODEL_WEIGHT-$TASK_NAME-pred \
-  --weights_path output/$MODEL_TYPE-$MODEL_WEIGHT-checkpoints/$TASK_NAME/0/_ckpt_epoch_3.ckpt \
+  --weights_path output/$MODEL_TYPE-$MODEL_WEIGHT-checkpoints/$TASK_NAME/0/_ckpt_epoch_4.ckpt \
   --tags_csv output/$MODEL_TYPE-$MODEL_WEIGHT-log/$TASK_NAME/version_0/meta_tags.csv \
   # --task2_separate_fc true \
 
