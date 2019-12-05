@@ -4,8 +4,18 @@ TASK_NAME=physicaliqa
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v3_single_fc"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1"
 # MODEL_WEIGHT="baseline"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v3_contd"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd_v1"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_v1"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd_30k"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_30k"
+# MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256_v2"
+# MODEL_WEIGHT="baseline8"
 MODEL_WEIGHT="lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc"
 
+# $PYTHON -W ignore eval.py --model_type $MODEL_TYPE \
+# $PYTHON -W ignore new_eval.py --model_type $MODEL_TYPE \
 $PYTHON -W ignore test.py --model_type $MODEL_TYPE \
   --model_weight $MODEL_WEIGHT \
   --task_name $TASK_NAME \

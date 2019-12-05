@@ -584,6 +584,7 @@ class HuggingFaceClassifier(LightningModule):
             pred2 = torch.argmax(proba2, dim=-1).reshape(-1)
 
         elif multi_dataset and self.hparams.comet_cn_train100k:
+            # truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0).reshape(-1)
             # truth2 = torch.cat([o['batch_truth'] for o in outputs[1]], dim=0)
             # bz = outputs[1][0]['batch_truth'].shape[0]
             # logits2 = torch.cat([o['batch_logits'] for o in outputs[1]], dim=0)
