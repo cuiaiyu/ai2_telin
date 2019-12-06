@@ -1065,6 +1065,9 @@ class HuggingFaceClassifier(LightningModule):
                                          'atomic_which_one_qa',
                                          'atomic_temporal_qa',
                                          'cn_all_cs',
+                                         'cn_all_cs_10k',
+                                         'cn_all_cs_20k',
+                                         'cn_all_cs_50k',
                                          'cn_all_cs_30k'],
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)

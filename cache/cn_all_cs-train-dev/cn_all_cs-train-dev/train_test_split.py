@@ -1,4 +1,5 @@
 import json
+import random as r
 
 f = open("cn-all-cs-multiple-choice-data.jsonl", "r")
 l = open("cn-all-cs-multiple-choice-labels.lst", "r")
@@ -13,6 +14,11 @@ for lab in l:
     all_labs.append(lab)
 
 assert len(all_lines) == len(all_labs)
+
+r.seed(0)
+c = list(zip(all_lines, all_labs))
+random.shuffle(c)
+all_lines, all_labs = zip(*c)
 
 eval_num = 2000
 train_num = 20000

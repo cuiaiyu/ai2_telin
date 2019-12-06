@@ -1,3 +1,6 @@
+source ~/.bashrc
+conda activate mcs
+
 #!/bin/bash 
 #SBATCH --ntasks=1
 #SBATCH --time=10:00:00
@@ -8,13 +11,17 @@
 
 MODEL_TYPE=roberta
 TASK_NAME=physicaliqa
-TASK_NAME2=cn_all_cs
+#TASK_NAME2=cn_all_cs
+TASK_NAME2=cn_all_cs_50k
+#TASK_NAME2=cn_all_cs_20k
+#TASK_NAME2=cn_all_cs_50k
 
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_60k"
 # MODEL_WEIGHT="baseline"
 # MODEL_WEIGHT="lm_finetuned_wikihow_30000_w_cn_all_cs_v1"
-MODEL_WEIGHT="comet_roberta_singletrip_98_w_cn_all_cs_v1"
+#MODEL_WEIGHT="comet_roberta_singletrip_98_w_cn_all_cs_v1"
+MODEL_WEIGHT="large_roberta"
 
 python3 -W ignore train.py --model_type $MODEL_TYPE --model_weight $MODEL_WEIGHT \
   --task_config_file config/tasks.yaml \
