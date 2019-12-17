@@ -193,3 +193,17 @@ atomic_attr_qa_random_name:
     dev:
       dev_x: "atomic_attr_qa_random_name-train-dev/dev.jsonl"
       dev_y: "atomic_attr_qa_random_name-train-dev/dev-labels.lst"
+socialiqa_X:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/socialiqa_X/socialiqa_X-train-dev.zip"
+  task_formula: "[CLS] context [SEP] question [SEP] answerA|answerB|answerC [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "socialiqa_X-train-dev/train.jsonl"
+      train_y: "socialiqa_X-train-dev/train-labels.lst"
+    dev:
+      dev_x: "socialiqa_X-train-dev/dev.jsonl"
+      dev_y: "socialiqa_X-train-dev/dev-labels.lst"

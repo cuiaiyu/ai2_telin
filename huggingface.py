@@ -708,7 +708,7 @@ class HuggingFaceClassifier(LightningModule):
                                                   shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
                                                   task_id=2,)
 
-        self.hparams.batch_size = 4
+        self.hparams.batch_size = 8
         print (self.hparams.batch_size)
         dataloader = DataLoader(dataset,
                                 collate_fn=self.collate_fn,
@@ -801,10 +801,11 @@ class HuggingFaceClassifier(LightningModule):
         tokenizer_group.add_argument('--tokenizer_weight', type=str, default=None)
 
         task_group.add_argument('--task_name',
-                                choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr'],
+                                choices=['socialiqa_X', 'alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
-                                choices=['atomic_attr_qa_random_name',
+                                choices=['physicaliqa',
+                                         'atomic_attr_qa_random_name',
                                          'atomic_attr_qa',
                                          'atomic_which_one_qa',
                                          'atomic_temporal_qa',
