@@ -335,3 +335,87 @@ physicaliqa:
     adam_epsilon: 1e-8
     accumulate_grad_batches: 1
     do_lower_case: false
+
+physicaliqa_p25_v1:
+  roberta:
+    baseline_p25_v1_w_cn_all_cs_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    baseline_p25_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+  default:
+    seed: 42
+    lr: 2e-5
+    dropout: 0.5
+    batch_size: 32
+    max_seq_len: 128
+    max_nb_epochs: 3
+    initializer_range: 0.02
+    weight_decay: 0.0
+    warmup_steps: 0
+    adam_epsilon: 1e-8
+    accumulate_grad_batches: 1
+    do_lower_case: false
+
+physicaliqa_p50_v1:
+  roberta:
+    baseline_p50_v1_w_cn_all_cs_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    baseline_p50_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+  default:
+    seed: 42
+    lr: 2e-5
+    dropout: 0.5
+    batch_size: 32
+    max_seq_len: 128
+    max_nb_epochs: 3
+    initializer_range: 0.02
+    weight_decay: 0.0
+    warmup_steps: 0
+    adam_epsilon: 1e-8
+    accumulate_grad_batches: 1
+    do_lower_case: false
+
+physicaliqa_p75_v1:
+  roberta:
+    baseline_p75_v1_w_cn_all_cs_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    baseline_p75_v1:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+  default:
+    seed: 42
+    lr: 2e-5
+    dropout: 0.5
+    batch_size: 32
+    max_seq_len: 128
+    max_nb_epochs: 3
+    initializer_range: 0.02
+    weight_decay: 0.0
+    warmup_steps: 0
+    adam_epsilon: 1e-8
+    accumulate_grad_batches: 1
+    do_lower_case: false
