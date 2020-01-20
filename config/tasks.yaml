@@ -179,3 +179,73 @@ atomic_which_one_qa:
     dev:
       dev_x: "atomic_which_one_qa-train-dev/dev.jsonl"
       dev_y: "atomic_which_one_qa-train-dev/dev-labels.lst"
+atomic_attr_qa_random_name:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/atomic_attr_qa_random_name/atomic_attr_qa_random_name-train-dev.zip"
+  task_formula: "[CLS] content [SEP] question [SEP] answerA|answerB|answerC [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "atomic_attr_qa_random_name-train-dev/train.jsonl"
+      train_y: "atomic_attr_qa_random_name-train-dev/train-labels.lst"
+    dev:
+      dev_x: "atomic_attr_qa_random_name-train-dev/dev.jsonl"
+      dev_y: "atomic_attr_qa_random_name-train-dev/dev-labels.lst"
+socialiqa_X:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/socialiqa_X/socialiqa_X-train-dev.zip"
+  task_formula: "[CLS] context [SEP] question [SEP] answerA|answerB|answerC [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "socialiqa_X-train-dev/train.jsonl"
+      train_y: "socialiqa_X-train-dev/train-labels.lst"
+    dev:
+      dev_x: "socialiqa_X-train-dev/dev.jsonl"
+      dev_y: "socialiqa_X-train-dev/dev-labels.lst"
+physicaliqa_p25_v1:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/physicaliqa/physicaliqa_p25_v1-train-dev.zip"
+  task_formula: "[CLS] goal [SEP] sol1|sol2 [SEP]"
+  type_formula: "0 0 0 1 1"
+  label_offset: 0
+  num_choices: 2
+  file_mapping:
+    train:
+      train_x: "physicaliqa_p25_v1-train-dev/train.jsonl"
+      train_y: "physicaliqa_p25_v1-train-dev/train-labels.lst"
+    dev:
+      dev_x: "physicaliqa_p25_v1-train-dev/dev.jsonl"
+      dev_y: "physicaliqa_p25_v1-train-dev/dev-labels.lst"
+physicaliqa_p50_v1:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/physicaliqa/physicaliqa_p50_v1-train-dev.zip"
+  task_formula: "[CLS] goal [SEP] sol1|sol2 [SEP]"
+  type_formula: "0 0 0 1 1"
+  label_offset: 0
+  num_choices: 2
+  file_mapping:
+    train:
+      train_x: "physicaliqa_p50_v1-train-dev/train.jsonl"
+      train_y: "physicaliqa_p50_v1-train-dev/train-labels.lst"
+    dev:
+      dev_x: "physicaliqa_p50_v1-train-dev/dev.jsonl"
+      dev_y: "physicaliqa_p50_v1-train-dev/dev-labels.lst"
+physicaliqa_p75_v1:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/physicaliqa/physicaliqa_p75_v1-train-dev.zip"
+  task_formula: "[CLS] goal [SEP] sol1|sol2 [SEP]"
+  type_formula: "0 0 0 1 1"
+  label_offset: 0
+  num_choices: 2
+  file_mapping:
+    train:
+      train_x: "physicaliqa_p75_v1-train-dev/train.jsonl"
+      train_y: "physicaliqa_p75_v1-train-dev/train-labels.lst"
+    dev:
+      dev_x: "physicaliqa_p75_v1-train-dev/dev.jsonl"
+      dev_y: "physicaliqa_p75_v1-train-dev/dev-labels.lst"
