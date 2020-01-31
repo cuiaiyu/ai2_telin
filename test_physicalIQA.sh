@@ -12,8 +12,8 @@ TASK_NAME=physicaliqa
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_30k"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256_v2"
 # MODEL_WEIGHT="baseline8"
-MODEL_WEIGHT="lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc"
-
+# MODEL_WEIGHT="lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc"
+MODEL_WEIGHT="large_roberta"
 # $PYTHON -W ignore eval.py --model_type $MODEL_TYPE \
 # $PYTHON -W ignore new_eval.py --model_type $MODEL_TYPE \
 $PYTHON -W ignore test.py --model_type $MODEL_TYPE \

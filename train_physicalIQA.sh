@@ -12,9 +12,11 @@ conda activate mcs
 MODEL_TYPE=roberta
 TASK_NAME=physicaliqa
 #TASK_NAME2=cn_all_cs
-TASK_NAME2=cn_all_cs_50k
-#TASK_NAME2=cn_all_cs_20k
+#TASK_NAME2=cn_all_cs_10k
+TASK_NAME2=cn_all_cs_20k
 #TASK_NAME2=cn_all_cs_50k
+#TASK_NAME2=cn_physical_cs_narrow
+#TASK_NAME2=cn_physical_cs_relaxed
 
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_60k"

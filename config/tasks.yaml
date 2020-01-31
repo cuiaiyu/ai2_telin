@@ -109,6 +109,34 @@ vcrqr:
     dev:
       dev_x: "val/qar.jsonl"
       dev_y: "val/labels.jsonl"
+cn_physical_cs_narrow:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/cn_physical_cs_narrow/cn_physical_cs_narrow-train-dev.zip"
+  task_formula: "[CLS] e1 [SEP] e2 [SEP] sol1|sol2|sol3|sol4|sol5|sol6|sol7 [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 0
+  num_choices: 7
+  file_mapping:
+    train:
+      train_x: "cn_physical_cs_narrow-train-dev/train.jsonl"
+      train_y: "cn_physical_cs_narrow-train-dev/train-labels.lst"
+    dev:
+      dev_x: "cn_physical_cs_narrow-train-dev/dev.jsonl"
+      dev_y: "cn_physical_cs_narrow-train-dev/dev-labels.lst"
+cn_physical_cs_relaxed:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/cn_physical_cs_relaxed/cn_physical_cs_relaxed-train-dev.zip"
+  task_formula: "[CLS] e1 [SEP] e2 [SEP] sol1|sol2|sol3|sol4|sol5|sol6|sol7 [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 0
+  num_choices: 7
+  file_mapping:
+    train:
+      train_x: "cn_physical_cs_relaxed-train-dev/train.jsonl"
+      train_y: "cn_physical_cs_relaxed-train-dev/train-labels.lst"
+    dev:
+      dev_x: "cn_physical_cs_relaxed-train-dev/dev.jsonl"
+      dev_y: "cn_physical_cs_relaxed-train-dev/dev-labels.lst"
 cn_all_cs:
   urls:
     - "https://storage.googleapis.com/ai2-mosaic/public/cn_all_cs/cn_all_cs-train-dev.zip"
