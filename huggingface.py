@@ -1057,7 +1057,8 @@ class HuggingFaceClassifier(LightningModule):
         tokenizer_group.add_argument('--tokenizer_weight', type=str, default=None)
 
         task_group.add_argument('--task_name',
-                                choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr'],
+                                choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa',
+                                         'vcrqa', 'vcrqr', 'physicaliqa-carved'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
                                 choices=['atomic_attr_qa_random_name',
