@@ -74,44 +74,62 @@ def tokenize_physicaliqa_carved(goal: str, sol1: str, sol2: str, preprocessor: T
     sep = preprocessor.tokenizer.sep_token
     cls = preprocessor.tokenizer.cls_token
 
-    context = [cls] + preprocessor.tokenize(goal) + [sep]
+    goal = [cls] + preprocessor.tokenize(goal) + [sep]
     sol1_tokens = preprocessor.tokenize(sol1)
     sol2_tokens = preprocessor.tokenize(sol2)
     # get the blocks that are matching between two lists of tokens
     s = SequenceMatcher(None, sol1_tokens, sol2_tokens)
     context_indices = list(s.get_matching_blocks())
+    context1 = []
+    context2 = []
     answers1 = []
     answers2 = []
     last_answer_1_index = 0
     last_answer_2_index = 0
 
-    # add mask if the first words don't allign, also intiaite the sep for answer separation
-    if context_indices[0][0] > 0:
-        context.append(mask)
-        answers1.append(sep)
-        answers2.append(sep)
     # For each block
-    for i, j, k in context_indices[:-1]:
+    for i, j, k in context_indices:
+        # add mask for the un-match so far
+        if last_answer_1_index < i:
+            context1.append(mask)
+        if last_answer_2_index < j:
+            context2.append(mask)
         # add shared context
-        context.extend(sol1_tokens[i:i+k])
-        context.append(mask)
+        context1.extend(sol1_tokens[i:i+k])
+        context2.extend(sol2_tokens[j:j+k])
+
         # and set answers that are different
         answers1.extend(sol1_tokens[last_answer_1_index:i])
-        answers1.append(sep)
-        last_answer_1_index = i + k
         answers2.extend(sol2_tokens[last_answer_2_index:j])
-        answers2.append(sep)
+        # Add separator if an answer was added
+        if last_answer_1_index != i:
+            answers1.append(sep)
+        if last_answer_2_index != j:
+            answers2.append(sep)
+
+        # update last index
+        last_answer_1_index = i + k
         last_answer_2_index = j + k
 
-    # Convert to token / token id format
-    example = [context[:-1] + answers1, context[:-1] + answers2]
-    example_token_type_ids = [[0]*len(context) + [1]*(len(answers1)-1), [0]*len(context) + [1]*(len(answers2)-1)]
-    # print(example)
-    # print(len(example[0]), len(example[1]))
-    # print(example_token_type_ids)
-    # print(len(example_token_type_ids[0]), len(example_token_type_ids[1]))
+    # print()
+    # print(goal ,'\n')
+    # print(sol1 ,'\n')
+    # print(sol2 ,'\n')
+    # print(context_indices)
+    # print(context1)
+    # print(answers1)
+    # print(context2)
+    # print(answers2)
 
-    return example, example_token_type_ids
+    # Convert to token / token id format
+    complete_context1 = goal + context1 + [sep]
+    complete_context2 = goal + context2 + [sep]
+    example = [complete_context1 + answers1, complete_context2 + answers2]
+    example_token_type_ids = [[0]*len(complete_context1) + [1]*(len(answers1)),
+                              [0]*len(complete_context2) + [1]*(len(answers2))]
+
+    is_single_word_dif = len(answers1) < 3 and len(answers2) < 3
+    return example, example_token_type_ids, is_single_word_dif
 
 
 
@@ -148,6 +166,9 @@ class ClassificationDataset(Dataset):
         :param shuffle: Shuffle the tokens.
         :return: A ClassificationDataset.
         """
+        single_word_data_only = True
+        single_word_indices = []
+
         assert len(file_mapping) <= 2, "At most two files can be specified"
 
         # Get data and label file directories
@@ -171,6 +192,7 @@ class ClassificationDataset(Dataset):
         ]
         type_formula_mapping = list(map(int, type_formula.split(' ')))
 
+        index = 0
         # Load data file
         with open(x) as input_file:
             tokens = []
@@ -184,10 +206,13 @@ class ClassificationDataset(Dataset):
                     sol1 = example_raw['sol1']
                     sol2 = example_raw['sol2']
 
-                    example, example_token_type_ids = tokenize_physicaliqa_carved(goal, sol1, sol2, preprocessor)
-
-                    tokens.append(example)
-                    token_type_ids.append(example_token_type_ids)
+                    example, example_token_type_ids, single_word = tokenize_physicaliqa_carved(goal, sol1, sol2,
+                                                                                               preprocessor)
+                    if single_word_data_only and single_word:
+                        tokens.append(example)
+                        token_type_ids.append(example_token_type_ids)
+                        single_word_indices.append(index)
+                    index += 1
 
             else:
                 for line in tqdm(input_file.readlines()):
@@ -258,6 +283,9 @@ class ClassificationDataset(Dataset):
                     else:
                         labels.append(int(line) - label_offset)
 
+        if single_word_data_only:
+            labels = [labels[index] for index in single_word_indices]
+
         input_ids = [[preprocessor.tokens2ids(ee) for ee in e] for e in tokens]
         attention_mask = [[[1 for _ in ee] for ee in e] for e in tokens]
 
@@ -268,14 +296,15 @@ class ClassificationDataset(Dataset):
             Maximum input length: {max(map(lambda e: max(map(len, e)), tokens))}
             99 % of input length: {sorted(map(lambda e: max(map(len, e)), tokens))[int(len(tokens) * .99)]}
         """)
-        #
-        # print(len(tokens), len(input_ids), len(token_type_ids), len(attention_mask), len(labels), task_id)
-        # print('Tokens:', tokens[90])
-        # print('Input ids:', input_ids[90])
-        # print('Token type ids:', token_type_ids[90])
-        # print('Attention mask:', attention_mask[90])
-        # print('Labels:', labels[90])
-        # raise RuntimeError
+
+        for i in range(10):
+            print(len(tokens), len(input_ids), len(token_type_ids), len(attention_mask), len(labels), task_id)
+            print('Tokens:', tokens[i])
+            print('Input ids:', input_ids[i])
+            print('Token type ids:', token_type_ids[i])
+            print('Attention mask:', attention_mask[i])
+            print('Labels:', labels[i])
+        raise RuntimeError
 
         return ClassificationDataset(tokens, input_ids, token_type_ids, attention_mask, labels, task_id)
 
