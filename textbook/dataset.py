@@ -208,9 +208,10 @@ class ClassificationDataset(Dataset):
 
                     example, example_token_type_ids, single_word = tokenize_physicaliqa_carved(goal, sol1, sol2,
                                                                                                preprocessor)
-                    if single_word_data_only and single_word:
-                        tokens.append(example)
-                        token_type_ids.append(example_token_type_ids)
+
+                    tokens.append(example)
+                    token_type_ids.append(example_token_type_ids)
+                    if single_word:
                         single_word_indices.append(index)
                     index += 1
 
@@ -285,6 +286,8 @@ class ClassificationDataset(Dataset):
 
         if single_word_data_only:
             labels = [labels[index] for index in single_word_indices]
+            tokens = [tokens[index] for index in single_word_indices]
+            token_type_ids = [token_type_ids[index] for index in single_word_indices]
 
         input_ids = [[preprocessor.tokens2ids(ee) for ee in e] for e in tokens]
         attention_mask = [[[1 for _ in ee] for ee in e] for e in tokens]
