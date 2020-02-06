@@ -297,14 +297,14 @@ class ClassificationDataset(Dataset):
             99 % of input length: {sorted(map(lambda e: max(map(len, e)), tokens))[int(len(tokens) * .99)]}
         """)
 
-        for i in range(10):
-            print(len(tokens), len(input_ids), len(token_type_ids), len(attention_mask), len(labels), task_id)
-            print('Tokens:', tokens[i])
-            print('Input ids:', input_ids[i])
-            print('Token type ids:', token_type_ids[i])
-            print('Attention mask:', attention_mask[i])
-            print('Labels:', labels[i])
-        raise RuntimeError
+        # for i in range(10):
+        #     print(len(tokens), len(input_ids), len(token_type_ids), len(attention_mask), len(labels), task_id)
+        #     print('Tokens:', tokens[i])
+        #     print('Input ids:', input_ids[i])
+        #     print('Token type ids:', token_type_ids[i])
+        #     print('Attention mask:', attention_mask[i])
+        #     print('Labels:', labels[i])
+        # raise RuntimeError
 
         return ClassificationDataset(tokens, input_ids, token_type_ids, attention_mask, labels, task_id)
 
