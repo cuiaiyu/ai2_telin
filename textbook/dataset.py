@@ -166,7 +166,7 @@ class ClassificationDataset(Dataset):
         :param shuffle: Shuffle the tokens.
         :return: A ClassificationDataset.
         """
-        single_word_data_only = True
+        single_word_data_only = False
         single_word_indices = []
 
         assert len(file_mapping) <= 2, "At most two files can be specified"

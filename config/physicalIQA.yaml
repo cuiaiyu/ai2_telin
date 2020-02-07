@@ -2,7 +2,10 @@ physicaliqa:
   roberta:
     roberta-large:
       lr: 5e-6
-      batch_size: 8
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 4
     large_roberta:
       lr: 1e-5
       batch_size: 4
