@@ -122,7 +122,8 @@ class HuggingFaceTokenizerLoader(TokenizerLoader):
     @classmethod
     def load(cls, model_type: str, model_weights: str, *args, **kargs) -> HuggingFaceTokenizerLoader:
         assert model_type in TOKENIZERS, f"Tokenizer model type {model_type} is not recognized."
-        tokenizer_dir = "large_roberta"
+        # tokenizer_dir = "large_roberta" 
+        tokenizer_dir = "roberta-large" # remember to change it back
         return HuggingFaceTokenizerLoader(
             TOKENIZERS[model_type].from_pretrained(tokenizer_dir, *args, cache_dir="./model_cache", **kargs))
 
@@ -1105,7 +1106,7 @@ class HuggingFaceClassifier(LightningModule):
 
         task_group.add_argument('--task_name',
                                 choices=['socialiqa_X', 'alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr',
-                                         'physicaliqa_p25_v1', 'physicaliqa_p50_v1', 'physicaliqa_p75_v1'],
+                                         'physicaliqa_p25_v1', 'physicaliqa_p50_v1', 'physicaliqa_p75_v1', 'social_before_after'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
                                 choices=['physicaliqa',

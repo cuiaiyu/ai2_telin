@@ -171,11 +171,32 @@ class ClassificationDataset(Dataset):
                                                       for t in example_tokens for e in example_token_type_ids]
 
                     elif isinstance(segment, list):
-                        example_tokens = [preprocessor.tokenize(example_raw[k]) for k in segment]
+
+                        if "social_before_after" in cache_dir:
+
+                            if segment[0] == "context": ## ['context', 'beforeA', 'beforeB', 'beforeC']
+                                if (example_raw[segment[1]] == "" and example_raw[segment[2]] == "" and example_raw[segment[3]] == ""):
+                                    # before all empty ==> add only contextad
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[0]])]
+                                else:
+                                    # before all full ==> add all three befores
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[j]]) for j in range(1,4)]
+                            
+                            else: ## ['afterA', 'afterB', 'afterC', 'context']
+                                if (example_raw[segment[0]] == "" and example_raw[segment[1]] == "" and example_raw[segment[2]] == ""):
+                                    # after all empty ==> add only context
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[3]])]
+                                else:
+                                    # after all full ==> add all three afters
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[j]]) for j in range(0,3)]
+
+                        else:
+                            example_tokens = [preprocessor.tokenize(example_raw[k]) for k in segment]
+                        
                         example = [e + t for t in example_tokens for e in example]
                         example_token_type_ids = [e + [i for _ in t]
-                                                  for t in example_tokens for e in example_token_type_ids]
-
+                                                for t in example_tokens for e in example_token_type_ids]
+                # print(example)
                 tokens.append(example)
                 token_type_ids.append(example_token_type_ids)
 
