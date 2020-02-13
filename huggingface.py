@@ -122,7 +122,8 @@ class HuggingFaceTokenizerLoader(TokenizerLoader):
     @classmethod
     def load(cls, model_type: str, model_weights: str, *args, **kargs) -> HuggingFaceTokenizerLoader:
         assert model_type in TOKENIZERS, f"Tokenizer model type {model_type} is not recognized."
-        tokenizer_dir = "large_roberta"
+        tokenizer_dir = "large_roberta" # remember to uncomment this line
+        # tokenizer_dir = "roberta-large" # just for local
         return HuggingFaceTokenizerLoader(
             TOKENIZERS[model_type].from_pretrained(tokenizer_dir, *args, cache_dir="./model_cache", **kargs))
 
@@ -488,6 +489,40 @@ class HuggingFaceClassifier(LightningModule):
                 'task_id': 1 if not task2 else 2,
             })
 
+            if self.hparams.grad_interpret:
+                print (data_batch['tokens'])
+                print (len(data_batch['tokens'][0][0]))
+                print (data_batch['input_ids'].shape)
+                loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
+                from interprets.interpret import SmoothGradient
+                def get_roberta_loss(model, data_batch, **kwargs):
+                    B, _, S = data_batch['input_ids'].shape
+                    logits = self.forward(**{
+                        'input_ids': data_batch['input_ids'].reshape(-1, S),
+                        'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
+                        'attention_mask': data_batch['attention_mask'].reshape(-1, S),
+                        'task_id': 1 if not task2 else 2,
+                    })
+                    target = kwargs['labels']
+                    loss = self.loss(target.reshape(-1), logits.reshape(B, -1))
+                    return loss
+                sg = SmoothGradient(self, embedding_layer=self.encoder.model.embeddings,
+                    get_loss_func=get_roberta_loss, args=None)
+                grads = sg.saliency_interpret(data_batch, labels=data_batch['y'])
+                print (len(grads))
+                print (grads['grad_input_1_0'])
+                print (grads['grad_input_1_1'])
+                keys = sorted(grads.keys())
+                for i in range(len(grads)):
+                    key = keys[i]
+                    print (key)
+                    curr_grads = grads[key]
+                    curr_tokens = data_batch['tokens'][0][i]
+                    new_list = [(u, v) for u, v in zip(curr_grads, curr_tokens)]
+                    print (sorted(new_list, reverse=True)[0:5])
+                print (self.tokenizer.tokenizer.convert_tokens_to_string(data_batch['tokens'][0][0]))
+                print (loss_val); raise
+
             return {
                 'batch_logits': logits.reshape(B, -1),
             }
@@ -502,6 +537,18 @@ class HuggingFaceClassifier(LightningModule):
                     'attention_mask': data_batch['attention_mask'].reshape(-1, S),
                     'task_id': 1 if not task2 else 2,
                 })
+
+                if self.hparams.grad_interpret:
+                    loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
+                    from interprets.interpret import SmoothGradient
+                    def get_roberta_loss(model, logits, **kwargs):
+                        target = kwargs['labels']
+                        loss = self.loss(target.reshape(-1), logits.reshape(B, -1))
+                        return loss
+                    sg = SmoothGradient(self, embedding_layer=self.encoder.model.embeddings,
+                        get_loss_func=get_roberta_loss, args=None)
+                    sg.saliency_interpret(logits, labels=data_batch['y'])
+                    print (loss_val); raise
 
                 return {
                     'batch_logits': logits.reshape(B, -1),
@@ -726,7 +773,7 @@ class HuggingFaceClassifier(LightningModule):
             {'params': [p for n, p in self.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
         optimizer = AdamW(optimizer_grouped_parameters, lr=self.hparams.learning_rate, eps=self.hparams.adam_epsilon)
-        scheduler = WarmupLinearSchedule(optimizer, warmup_steps=self.hparams.warmup_steps, t_total=t_total)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.hparams.warmup_steps, num_training_steps=t_total)
 
         return [optimizer], [scheduler]
 
@@ -922,7 +969,8 @@ class HuggingFaceClassifier(LightningModule):
             return self.val_dataloader
 
         dataset = ClassificationDataset.load(cache_dir=self.hparams.test_input_dir,
-                                             file_mapping={'input_x': None},
+                                             # file_mapping={'input_x': None},
+                                             file_mapping=self.task_config[self.hparams.task_name]['file_mapping']['dev'],
                                              task_formula=self.task_config[self.hparams.task_name]['task_formula'],
                                              type_formula=self.task_config[self.hparams.task_name]['type_formula'],
                                              preprocessor=self.tokenizer,
@@ -947,7 +995,7 @@ class HuggingFaceClassifier(LightningModule):
                                                   shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
                                                   task_id=2,)
 
-        self.hparams.batch_size = 4
+        self.hparams.batch_size = 1
         print (self.hparams.batch_size)
         dataloader = DataLoader(dataset,
                                 collate_fn=self.collate_fn,
@@ -1057,11 +1105,12 @@ class HuggingFaceClassifier(LightningModule):
         tokenizer_group.add_argument('--tokenizer_weight', type=str, default=None)
 
         task_group.add_argument('--task_name',
-                                choices=['alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr',
-                                         'physicaliqa_p25_v1', 'physicaliqa_p50_v1', 'physicaliqa_p75_v1'],
+                                choices=['socialiqa_X', 'alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr',
+                                         'physicaliqa_p25_v1', 'physicaliqa_p50_v1', 'physicaliqa_p75_v1', 'social_before_after'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
-                                choices=['atomic_attr_qa_random_name',
+                                choices=['physicaliqa',
+                                         'atomic_attr_qa_random_name',
                                          'atomic_attr_qa',
                                          'atomic_which_one_qa',
                                          'atomic_temporal_qa',
@@ -1070,6 +1119,7 @@ class HuggingFaceClassifier(LightningModule):
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
         task_group.add_argument('--comet_cn_train100k', type=bool, required=False, default=False)
+        task_group.add_argument('--grad_interpret', type=bool, required=False, default=False)
         task_group.add_argument('--task_config_file', type=str, required=True)
         task_group.add_argument('--task_cache_dir', type=str, required=True)
 

@@ -193,6 +193,20 @@ atomic_attr_qa_random_name:
     dev:
       dev_x: "atomic_attr_qa_random_name-train-dev/dev.jsonl"
       dev_y: "atomic_attr_qa_random_name-train-dev/dev-labels.lst"
+socialiqa_X:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/socialiqa_X/socialiqa_X-train-dev.zip"
+  task_formula: "[CLS] context [SEP] question [SEP] answerA|answerB|answerC [SEP]"
+  type_formula: "0 0 0 0 0 1 1"
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "socialiqa_X-train-dev/train.jsonl"
+      train_y: "socialiqa_X-train-dev/train-labels.lst"
+    dev:
+      dev_x: "socialiqa_X-train-dev/dev.jsonl"
+      dev_y: "socialiqa_X-train-dev/dev-labels.lst"
 physicaliqa_p25_v1:
   urls:
     - "https://storage.googleapis.com/ai2-mosaic/public/physicaliqa/physicaliqa_p25_v1-train-dev.zip"
@@ -235,3 +249,17 @@ physicaliqa_p75_v1:
     dev:
       dev_x: "physicaliqa_p75_v1-train-dev/dev.jsonl"
       dev_y: "physicaliqa_p75_v1-train-dev/dev-labels.lst"
+social_before_after:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/social_before_after/social_before_after-train-dev.zip"
+  task_formula: "[CLS] context|beforeA|beforeB|beforeC [SEP] afterA|afterB|afterC|context [SEP]"
+  type_formula: "0 0 0 1 1" # later make it q: 0 a: 1
+  label_offset: 1
+  num_choices: 3
+  file_mapping:
+    train:
+      train_x: "social_before_after-train-dev/train.jsonl"
+      train_y: "social_before_after-train-dev/train-labels.lst"
+    dev:
+      dev_x: "social_before_after-train-dev/dev.jsonl"
+      dev_y: "social_before_after-train-dev/dev-labels.lst"

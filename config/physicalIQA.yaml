@@ -295,6 +295,19 @@ physicaliqa:
       batch_size: 4
       dropout: 0
       accumulate_grad_batches: 1
+    lm_with_dp_graphs_gat2L_undirected_enhanced_fcn_org_roberta_repr_200kdata_multitask_beta_0p001_200k_30000:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 4
+    comet_roberta_singletrip_98:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 1
+      max_nb_epochs: 4
+    lm_with_legpt_gat1L_enhanced_fully_conn_dp_cc_dc_200k_0115_iter_30k_iter_50k:
     roberta_w_cn_comet_v5:
       lr: 5e-6
       batch_size: 8

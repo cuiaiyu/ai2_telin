@@ -115,8 +115,8 @@ class ClassificationDataset(Dataset):
             token if '|' not in token else token.split('|') for token in task_formula.split(' ')
         ]
 
-        type_formula_mapping = list(map(int, type_formula.split(' ')))
-
+        type_formula_mapping = list(map(int, type_formula.split(' '))) # static type formula mapping
+        
         if file_mapping[x] is None:
             x = [f for f in glob.glob(f"{cache_dir}/*.jsonl")]
             assert len(x) == 1, f"Multiple input files found in cache_dir {x}"
@@ -141,6 +141,15 @@ class ClassificationDataset(Dataset):
 
                 example = [[]]
                 example_token_type_ids = [[]]
+
+                # dynamic type id allocation for "before-context" cases in social_before_after
+                if "social_before_after" in cache_dir:
+                    if isinstance(task_formula_mapping[1], list):
+                        seg = task_formula_mapping[1]
+                        if (example_raw[seg[1]] != "" and example_raw[seg[2]] != "" and example_raw[seg[3]] != ""):
+                            type_formula_mapping = [1, 1, 1, 0, 0]
+                        else:
+                            type_formula_mapping = [0, 0, 0, 1, 1]
 
                 for i, segment in zip(type_formula_mapping, task_formula_mapping):
 
@@ -171,10 +180,31 @@ class ClassificationDataset(Dataset):
                                                       for t in example_tokens for e in example_token_type_ids]
 
                     elif isinstance(segment, list):
-                        example_tokens = [preprocessor.tokenize(example_raw[k]) for k in segment]
+
+                        if "social_before_after" in cache_dir:
+
+                            if segment[0] == "context": ## ['context', 'beforeA', 'beforeB', 'beforeC']
+                                if (example_raw[segment[1]] == "" and example_raw[segment[2]] == "" and example_raw[segment[3]] == ""):
+                                    # before all empty ==> add only context
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[0]])]
+                                else:
+                                    # before all full ==> add all three befores
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[j]]) for j in range(1,4)]
+                            
+                            else: ## ['afterA', 'afterB', 'afterC', 'context']
+                                if (example_raw[segment[0]] == "" and example_raw[segment[1]] == "" and example_raw[segment[2]] == ""):
+                                    # after all empty ==> add only context
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[3]])]
+                                else:
+                                    # after all full ==> add all three afters
+                                    example_tokens = [preprocessor.tokenize(example_raw[segment[j]]) for j in range(0,3)]
+
+                        else:
+                            example_tokens = [preprocessor.tokenize(example_raw[k]) for k in segment]
+                        
                         example = [e + t for t in example_tokens for e in example]
                         example_token_type_ids = [e + [i for _ in t]
-                                                  for t in example_tokens for e in example_token_type_ids]
+                                                for t in example_tokens for e in example_token_type_ids]                            
 
                 tokens.append(example)
                 token_type_ids.append(example_token_type_ids)
