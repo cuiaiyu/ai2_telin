@@ -29,11 +29,14 @@ def main(hparams):
         weights_path=hparams.weights_path,
         tags_csv=hparams.tags_csv,
         on_gpu=torch.cuda.is_available(),
+        # on_gpu=False,
         map_location=None
     )
+    
+    trainer = Trainer(gpus=1)
+    # trainer = Trainer(gpus=None)
 
-    trainer = Trainer()
-
+    model.eval()
     trainer.test(model)
 
 
