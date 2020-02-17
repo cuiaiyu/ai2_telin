@@ -29,4 +29,5 @@ python3 compare.py \
     --pred_1_path $PRED_1_PATH \
     --pred_2_path $PRED_3_PATH \
     --prob_1_path $PROB_1_PATH \
-    --prob_2_path $PROB_3_PATH 
+    --prob_2_path $PROB_3_PATH \
+    --exp_1_strictly_better
