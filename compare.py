@@ -24,15 +24,15 @@ def compare(label_path, jsonl_path,
     for i in range(len(labels)):
         sample = qa_reader.readline()
         label = labels[i]
-        if pred_1[i] != pred_2[i]:
+        if pred_2[i] != label:
+            count_2_wrong += 1
+        if pred_1[i] != label:
+            count_1_wrong += 1
+	if pred_1[i] != pred_2[i]:
             print("Disagreement on", str(i+1)+"-th sample:\n", sample.rstrip())
             print("The correct answer is", label)
-            if pred_1[i] != label:
-                count_1_wrong += 1
             print("Experiment " + exp_name_1 + "'s choice: " + str(pred_1[i]))
             print("\twith probabilities for each choice:", *prob_1[i])
-            if pred_2[i] != label:
-                count_w_wrong += 1
             print("Experiment " + exp_name_2 + "'s choice: " + str(pred_2[i]))
             print("\twith probabilities for each choice:", *prob_2[i])
         else:
