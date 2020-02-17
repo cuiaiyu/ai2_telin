@@ -32,11 +32,9 @@ def compare(label_path, jsonl_path,
             print()
             print("---------------------------")
             print("Disagreement on", str(i+1)+"-th sample:")
-            print("\tContext:", sample["context"])
-            print("\tQuestion:", sample["question"])
-            print("\tAnswer choice 1:", sample["answerA"])
-            print("\tAnswer choice 2:", sample["answerB"])
-            print("\tAnswer choice 3:", sample["answerC"])
+            for key in sample:
+                if sample[key] != "":
+                    print("{}: {}".format(key, sample[key]))
             print("The correct answer is", label)
             print()
             print("Experiment " + exp_name_1 + "'s choice: " + str(pred_1[i]))
