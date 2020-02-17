@@ -18,6 +18,9 @@ def compare(label_path, jsonl_path,
     prob_2 = [[float(j) for j in i.split()] for i in open(prob_2_path).readlines()]
     assert len(labels) == len(pred_1) == len(pred_2) == len(prob_1) == len(prob_2)
     
+    count_1_wrong = 0
+    count_2_wrong = 0
+    n_samples = len(labels)
     for i in range(len(labels)):
         sample = qa_reader.readline()
         label = labels[i]
@@ -25,14 +28,23 @@ def compare(label_path, jsonl_path,
             print("Disagreement on", str(i+1)+"-th sample:\n", sample.rstrip())
             print("The correct answer is", label)
             if pred_1[i] != label:
-                print("Experiment " + exp_name_1 + "'s choice: " + str(pred_1[i]))
-                print("\twith probabilities for each choice:", *prob_1[i])
+                count_1_wrong += 1
+            print("Experiment " + exp_name_1 + "'s choice: " + str(pred_1[i]))
+            print("\twith probabilities for each choice:", *prob_1[i])
             if pred_2[i] != label:
-                print("Experiment " + exp_name_2 + "'s choice: " + str(pred_2[i]))
-                print("\twith probabilities for each choice:", *prob_2[i])
+                count_w_wrong += 1
+            print("Experiment " + exp_name_2 + "'s choice: " + str(pred_2[i]))
+            print("\twith probabilities for each choice:", *prob_2[i])
         else:
-            print("Agreed on", str(i+1)+"-th sample.")
+            pass
+	    # print("Agreed on", str(i+1)+"-th sample.")
         print()
+    print("=======================")
+    count_1_correct = n_samples - count_1_wrong
+    count_2_correct = n_samples - count_2_wrong
+    print("{}'s accuracy is {}%: {} out of {} samples.".format(exp_name_1, count_1_correct / n_samples * 100, count_1_correct, n_samples))
+    print("{}'s accuracy is {}%: {} out of {} samples.".format(exp_name_2, count_2_correct / n_samples * 100, count_2_correct, n_samples))
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--label_path", required=True)
