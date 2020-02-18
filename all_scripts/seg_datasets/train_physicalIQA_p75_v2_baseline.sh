@@ -7,15 +7,9 @@
 #SBATCH --partition=isi
 
 MODEL_TYPE=roberta
-TASK_NAME=physicaliqa
+TASK_NAME=physicaliqa_p75_v1
 
-# MODEL_WEIGHT="baseline_w_cn_all_cs_v1"
-# MODEL_WEIGHT="baseline_w_cn_all_cs_60k"
-# MODEL_WEIGHT="baseline"
-# MODEL_WEIGHT="lm_finetuned_wikihow_30000_w_cn_all_cs_v1"
-# MODEL_WEIGHT="comet_roberta_singletrip_98_w_cn_all_cs_v1"
-# MODEL_WEIGHT="lm_finetuned_wikihow_30000_w_cn_all_cs_v1"
-MODEL_WEIGHT="large_roberta_bz4"
+MODEL_WEIGHT="baseline_p75_v2"
 
 python3 -W ignore train.py --model_type $MODEL_TYPE --model_weight $MODEL_WEIGHT \
   --task_config_file config/tasks.yaml \
