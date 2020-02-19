@@ -6,6 +6,11 @@ physicaliqa:
     large_roberta:
       lr: 1e-5
       batch_size: 16
+    large_roberta_bz4:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      max_nb_epochs: 3
     lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_w_cn_all_cs_v1:
       lr: 5e-6
       batch_size: 4
@@ -462,6 +467,84 @@ physicaliqa:
       accumulate_grad_batches: 2
       max_nb_epochs: 3
     lm_finetuned_relation_masking_dc_cc_0210_iter100k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_nokg_masking_dc_cc_0210_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_dc_cc_0213_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_dc_cc_0213_iter100k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_nopad_dc_cc_0214_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_nopad_dc_0214_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_dc_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_dc_iter30k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_nopad_dc_0214_iter30k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_nopad_nothehave_dc_0214_iter30k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_nopad_nothehave_prob0p4_dc_0214_iter30k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_nopad_nothehave_prob0p4_dc_0214_iter30k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg1_nopad_nothehave_prob0p4_dc_cc_0214_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_nopad_nothehave_prob0p4_dc_cc_0214_iter50k:
       lr: 5e-6
       batch_size: 4
       dropout: 0.1
