@@ -247,6 +247,23 @@ class HuggingFaceClassifier(LightningModule):
         self.tokenizer = HuggingFaceTokenizerLoader.load(
             self.hparams.tokenizer_type, self.hparams.tokenizer_weight, do_lower_case=self.hparams.do_lower_case)
 
+        if self.hparams.kg_enhanced_finetuning:
+            import sys
+            sys.path.append('./kg_enhanced')
+            from kg_enhanced.legpt_utils import KG_Based_Masking
+            class ARGS(object):
+                def __init__(self):
+                    self.kg_datasets = ["concept_net_100k"]
+                    self.kg_multiword_matching = True
+                    self.num_sentences = -1
+                    self.mlm_probability = 0.8
+                    self.special_masking = "entity"
+                    self.max_num_kg_sample = 1
+                    self.kg_augment_with_pad = False
+                    self.data_root = "datasets"
+            self.kg_args = ARGS()
+            self.kg_augmentor = KG_Based_Masking(self.kg_args, self.tokenizer.tokenizer)
+
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, task_id=None):
 
         # if input_ids is not None and token_type_ids is not None and attention_mask is not None:
@@ -299,7 +316,6 @@ class HuggingFaceClassifier(LightningModule):
         return l
 
     def training_step(self, data_batch, batch_i):
-
         task2 = False
         if not self.hparams.comet_cn_train100k:
             if 'task_id' in data_batch:
@@ -315,8 +331,25 @@ class HuggingFaceClassifier(LightningModule):
 
             B, _, S = data_batch['input_ids'].shape
 
+            ## TODO: special aug here
+            if self.hparams.kg_enhanced_finetuning:
+                sent_ids_all = data_batch['input_ids'].reshape(-1, S)
+                sent_batch = self.kg_augmentor.batch_augemnt_kg_triplet_to_sent_ids(sent_ids_all, False)
+                if False:
+                    print ('-'*50)
+                    for i in range(len(sent_batch)):
+                        sent_ids_org = sent_ids_all[i]
+                        sent_ids = sent_batch[i]
+                        print (sent_ids_org)
+                        print (sent_ids)
+                        print (self.tokenizer.tokenizer.decode(sent_ids_org))
+                        print (self.tokenizer.tokenizer.decode(sent_ids))
+                        print ('-'*50)
+                    raise
+
             logits = self.forward(**{
-                'input_ids': data_batch['input_ids'].reshape(-1, S),
+                'input_ids': data_batch['input_ids'].reshape(-1, S) \
+                    if not self.hparam.kg_enhanced_finetuning else sent_batch,
                 'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
                 'attention_mask': data_batch['attention_mask'].reshape(-1, S),
                 'task_id': 1 if not task2 else 2,
@@ -1118,6 +1151,7 @@ class HuggingFaceClassifier(LightningModule):
                                          'cn_all_cs_30k'],
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
+        task_group.add_argument('--kg_enhanced_finetuning', type=bool, required=False, default=False)
         task_group.add_argument('--comet_cn_train100k', type=bool, required=False, default=False)
         task_group.add_argument('--grad_interpret', type=bool, required=False, default=False)
         task_group.add_argument('--task_config_file', type=str, required=True)
