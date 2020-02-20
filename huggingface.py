@@ -1047,8 +1047,7 @@ class HuggingFaceClassifier(LightningModule):
                                                                                                                 None),
                                                   shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
                                                   task_id=2,)
-
-        self.hparams.batch_size = 1
+        self.hparams.batch_size = 12 # for some reason it has to be explicit
         print (self.hparams.batch_size)
         dataloader = DataLoader(dataset,
                                 collate_fn=self.collate_fn,
