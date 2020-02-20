@@ -238,8 +238,9 @@ class KG_Based_Masking(object):
             sent_ids += kg_ids
 
             # TODO: for token type ids and attention mask
-            type_ids += [0] * len(kg_ids)
-            attn_mask += [1] * len(kg_ids)
+            if type_ids is not None and attn_mask is not None:
+                type_ids += [0] * len(kg_ids)
+                attn_mask += [1] * len(kg_ids)
         sent_ids = torch.tensor(sent_ids)
         
         # TODO: for token type ids and attention mask
