@@ -349,7 +349,7 @@ class HuggingFaceClassifier(LightningModule):
 
             logits = self.forward(**{
                 'input_ids': data_batch['input_ids'].reshape(-1, S) \
-                    if not self.hparam.kg_enhanced_finetuning else sent_batch,
+                    if not self.hparams.kg_enhanced_finetuning else sent_batch,
                 'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
                 'attention_mask': data_batch['attention_mask'].reshape(-1, S),
                 'task_id': 1 if not task2 else 2,
