@@ -213,8 +213,18 @@ class KG_Based_Masking(object):
                 break
         return i
 
-    def augemnt_kg_triplet_to_sent_ids(self, sent_ids, kg_triplets, kg_pos=None):
+    def augemnt_kg_triplet_to_sent_ids(self, sent_ids, kg_triplets,
+            type_ids=None, attn_mask=None, kg_pos=None):
         sent_ids = self.del_trailing_zeros_for_sent_ids(sent_ids)
+
+        # TODO: for token type ids and attention mask
+        if type_ids is not None:
+            type_ids = type_ids if type(type_ids) == list else type_ids.tolist()
+            type_ids = type_ids[:len(sent_ids)]
+        if attn_mask is not None:
+            attn_mask = attn_mask if type(attn_mask) == list else attn_mask.tolist()
+            attn_mask = attn_mask[:len(sent_ids)]
+
         for kg_triplet in kg_triplets:
             if kg_pos is not None:
                 if kg_pos != 0:
@@ -226,12 +236,22 @@ class KG_Based_Masking(object):
             else:
                 kg_ids = [1] + self.tokenizer.encode(kg_triplet)
             sent_ids += kg_ids
+
+            # TODO: for token type ids and attention mask
+            type_ids += [0] * len(kg_ids)
+            attn_mask += [1] * len(kg_ids)
         sent_ids = torch.tensor(sent_ids)
+        
+        # TODO: for token type ids and attention mask
+        type_ids = torch.tensor(type_ids)
+        attn_mask = torch.tensor(attn_mask)
 
         # print (sent_ids)
         # print (self.tokenizer.decode(sent_ids))
         # print (self.tokenizer.tokenize(self.tokenizer.decode(sent_ids)))
         # raise
+        if type_ids is not None and attn_mask is not None:
+            return sent_ids, type_ids, attn_mask
         return sent_ids
 
     def masking_augemnt_kg_triplet_to_sent_ids_entity(self, sent_ids,
@@ -445,10 +465,20 @@ class KG_Based_Masking(object):
         batch = (input_ids, label, org_sent)
         return batch
 
-    def batch_augemnt_kg_triplet_to_sent_ids(self, batch, verbose=False):
+    def batch_augemnt_kg_triplet_to_sent_ids(self, batch, type_ids_batch=None,
+            attn_mask_batch=None, verbose=False):
         max_len = 0
         new_batch = []
-        for sent_ids in batch:
+
+        if type_ids_batch is not None and attn_mask_batch is not None:
+            new_type_ids = []
+            new_attn_mask = []
+
+        for i in range(len(batch)):
+            sent_ids = batch[i]
+            if type_ids_batch is not None and attn_mask_batch is not None:
+                type_ids = type_ids_batch[i]
+                attn_mask = attn_mask_batch[i]
             # TODO: for each data ids, check and sample enities
             entities = self.helper.sample_entities(sent_ids, entity_count=1,
                 skip_entities=self.skip_entities)
@@ -473,14 +503,21 @@ class KG_Based_Masking(object):
                     print (sent_ids)
 
                 ####
-                sent_ids = self.augemnt_kg_triplet_to_sent_ids(
-                    sent_ids, kg_triplets, kg_pos=None)
+                if type_ids_batch is not None and attn_mask_batch is not None:    
+                    sent_ids, type_ids, attn_mask = self.augemnt_kg_triplet_to_sent_ids(
+                        sent_ids, kg_triplets, type_ids, attn_mask, kg_pos=None)
+                else:
+                    sent_ids = self.augemnt_kg_triplet_to_sent_ids(
+                        sent_ids, kg_triplets, kg_pos=None)
 
                 # original sentence
             
             curr_len = len(sent_ids)
             max_len = max(curr_len, max_len)
             new_batch.append(sent_ids)
+            if type_ids_batch is not None and attn_mask_batch is not None:
+                new_type_ids.append(type_ids)
+                new_attn_mask.append(attn_mask)
             if verbose:
                 print (curr_len)
                 print ('-'*50)
@@ -491,13 +528,26 @@ class KG_Based_Masking(object):
             for i in range(len(new_batch)):
                 input_ids  = new_batch[i]
                 no_pad_inputs = []
+                if type_ids_batch is not None and attn_mask_batch is not None:
+                    type_ids = new_type_ids[i]
+                    attn_mask = new_attn_mask[i]
+                    no_pad_type_ids = []
+                    no_pad_attn_mask = []
                 
                 for j in range(len(input_ids)):
                     idx = input_ids[j].item()
                     if idx != 1:
                         no_pad_inputs.append(idx)
+                        if type_ids_batch is not None and attn_mask_batch is not None:
+                            no_pad_type_ids.append(type_ids[j].item())
+                            no_pad_attn_mask.append(attn_mask[j].item())
                 no_pad_inputs = torch.tensor(no_pad_inputs)
                 new_batch[i] = no_pad_inputs
+                if type_ids_batch is not None and attn_mask_batch is not None:
+                    no_pad_type_ids = torch.tensor(no_pad_type_ids)
+                    no_pad_attn_mask = torch.tensor(no_pad_attn_mask)
+                    new_type_ids[i] = no_pad_type_ids
+                    new_attn_mask[i] = no_pad_attn_mask
                 curr_len = len(no_pad_inputs)
                 max_len = max(curr_len, max_len)
 
@@ -506,6 +556,10 @@ class KG_Based_Masking(object):
             print ("Max Len = {}".format(max_len))
         n_batch = len(batch)
         input_ids = np.full((n_batch, max_len), fill_value=1, dtype=np.int64)
+        if type_ids_batch is not None and attn_mask_batch is not None:
+            token_type_ids = np.full((n_batch, max_len), fill_value=0, dtype=np.int64)
+            # FIXME: currently don't have to deal with attention since it's always all 1
+            attention_mask = np.full((n_batch, max_len), fill_value=1, dtype=np.int64)
         for i in range(len(new_batch)):
             new_data = new_batch[i]
             curr_input_ids = new_data
@@ -513,11 +567,21 @@ class KG_Based_Masking(object):
             len_data = len(curr_input_ids)
             input_ids[i][:len_data] = curr_input_ids
 
+            if type_ids_batch is not None and attn_mask_batch is not None:
+                curr_type_ids = new_type_ids[i]
+                curr_type_ids = curr_type_ids.numpy()
+                len_type_ids = len(curr_type_ids)
+                token_type_ids[i][:len_type_ids] = curr_type_ids
+
         # tensor out and original sentence
         input_ids = torch.tensor(input_ids)
         if verbose:
             print (input_ids)
 
+        if type_ids_batch is not None and attn_mask_batch is not None:
+            token_type_ids = torch.tensor(token_type_ids)
+            attention_mask = torch.tensor(attention_mask)
+            return input_ids, token_type_ids, attention_mask
         return input_ids
 
 

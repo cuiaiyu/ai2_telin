@@ -334,24 +334,44 @@ class HuggingFaceClassifier(LightningModule):
             ## TODO: special aug here
             if self.hparams.kg_enhanced_finetuning:
                 sent_ids_all = data_batch['input_ids'].reshape(-1, S)
-                sent_batch = self.kg_augmentor.batch_augemnt_kg_triplet_to_sent_ids(sent_ids_all, False)
+                type_ids_all = data_batch['token_type_ids'].reshape(-1, S)
+                attn_ids_all = data_batch['attention_mask'].reshape(-1, S)
+                aug_batch = self.kg_augmentor.batch_augemnt_kg_triplet_to_sent_ids(
+                    sent_ids_all, type_ids_all, attn_ids_all, False)
+                sent_batch, type_ids_batch, attn_mask_batch = aug_batch
                 if False:
                     print ('-'*50)
                     for i in range(len(sent_batch)):
                         sent_ids_org = sent_ids_all[i]
+                        type_ids_org = type_ids_all[i]
+                        attn_ids_org = attn_ids_all[i]
                         sent_ids = sent_batch[i]
                         print (sent_ids_org)
+                        print (type_ids_org)
+                        print (attn_ids_org)
                         print (sent_ids)
-                        print (self.tokenizer.tokenizer.decode(sent_ids_org))
-                        print (self.tokenizer.tokenizer.decode(sent_ids))
+                        org_sent = self.tokenizer.tokenizer.decode(sent_ids_org)
+                        print (org_sent)
+                        new_sent = self.tokenizer.tokenizer.decode(sent_ids)
+                        print (new_sent)
+                        type_ids = type_ids_batch[i]
+                        attn_ids = attn_mask_batch[i]
+                        print (self.tokenizer.tokenizer.tokenize(new_sent))
+                        print (type_ids)
+                        print (attn_ids)
                         print ('-'*50)
-                    raise
+                if torch.cuda.is_available():
+                    sent_batch = sent_batch.cuda()
+                    type_ids_batch = type_ids_batch.cuda()
+                    attn_mask_batch = attn_mask_batch.cuda()
 
             logits = self.forward(**{
                 'input_ids': data_batch['input_ids'].reshape(-1, S) \
                     if not self.hparams.kg_enhanced_finetuning else sent_batch,
-                'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
-                'attention_mask': data_batch['attention_mask'].reshape(-1, S),
+                'token_type_ids': data_batch['token_type_ids'].reshape(-1, S) \
+                    if not self.hparams.kg_enhanced_finetuning else type_ids_batch,
+                'attention_mask': data_batch['attention_mask'].reshape(-1, S) \
+                    if not self.hparams.kg_enhanced_finetuning else attn_mask_batch,
                 'task_id': 1 if not task2 else 2,
             })
             loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))

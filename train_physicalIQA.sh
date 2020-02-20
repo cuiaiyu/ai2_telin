@@ -24,4 +24,4 @@ python3 -W ignore train.py --model_type $MODEL_TYPE --model_weight $MODEL_WEIGHT
   --task_cache_dir ./cache \
   --output_dir output/$MODEL_TYPE-$MODEL_WEIGHT-$TASK_NAME-pred \
   --log_save_interval 25 --row_log_interval 25 \
-  --kg_enhanced_finetuning true \
+  # --kg_enhanced_finetuning true \
