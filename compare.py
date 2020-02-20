@@ -19,17 +19,17 @@ def compare(label_path, jsonl_path,
     prob_2 = [[float(j) for j in i.split()] for i in open(prob_2_path).readlines()]
     assert len(labels) == len(pred_1) == len(pred_2) == len(prob_1) == len(prob_2)
     
-    count_1_wrong = 0
-    count_2_wrong = 0
     n_samples = len(labels)
+    count_disagree = 0
+    count_disagree_1_correct = 0
+    count_agree_correct = 0
+
     for i in range(len(labels)):
         sample = qa_reader.read()
         label = labels[i]
-        if pred_1[i] != label:
-            count_1_wrong += 1
-        if pred_2[i] != label:
-            count_2_wrong += 1
+        # two experiment results do not agree
         if pred_1[i] != pred_2[i]:
+            count_disagree += 1
             if not exp_1_strictly_better or pred_1[i] == label:
                 print()
                 print("---------------------------")
@@ -46,13 +46,38 @@ def compare(label_path, jsonl_path,
                 print("\twith probabilities for each choice:", *prob_2[i])
                 print("---------------------------")
                 print()
+            if pred_2[i] != label:
+                count_disagree_1_correct += 1
+        # two results agree
+        else:
+            if pred_1[i] == label:
+                count_agree_correct += 1
 
     print("=======================")
-    count_1_correct = n_samples - count_1_wrong
-    count_2_correct = n_samples - count_2_wrong
-    print("{}'s accuracy is {}%: {} out of {} samples.".format(exp_name_1, count_1_correct / n_samples * 100, count_1_correct, n_samples))
-    print("{}'s accuracy is {}%: {} out of {} samples.".format(exp_name_2, count_2_correct / n_samples * 100, count_2_correct, n_samples))
-
+    count_1_correct = count_agree_correct + count_disagree_1_correct
+    count_2_correct = count_agree_correct + (count_disagree - count_disagree_1_correct)
+    print("{}'s accuracy is {:.3f}% - {:4} out of {:4} samples.".format(exp_name_1, count_1_correct / n_samples * 100, count_1_correct, n_samples))
+    print("{}'s accuracy is {:.3f}% - {:4} out of {:4} samples.".format(exp_name_2, count_2_correct / n_samples * 100, count_2_correct, n_samples))
+    print()
+    count_agree                       = n_samples - count_disagree
+    count_agree_wrong                 = count_agree - count_agree_correct
+    count_disagree_2_correct          = count_disagree - count_disagree_1_correct
+    
+    agreed_percent                    = 100 * count_agree / n_samples
+    agreed_correct_percent            = 100 * count_agree_correct / n_samples
+    agreed_wrong_percent              = 100 * count_agree_wrong / n_samples
+    disagreed_percent                 = 100 * count_disagree / n_samples
+    disagreed_model1_correct_percent  = 100 * count_disagree_1_correct / n_samples
+    disagreed_model2_correct_percent  = 100 * count_disagree_2_correct / n_samples
+    
+    print ("Agreed Percentage:                   {:.3f}%".format(agreed_percent))
+    print ("Agreed Correct Percentage:           {:.3f}%".format(agreed_correct_percent))
+    print ("Agreed Wrong Percentage:             {:.3f}%".format(agreed_wrong_percent))
+    print ("Disagreed Percentage:                {:.3f}%".format(disagreed_percent))
+    print ("Disagreed Model1 Correct Percentage: {:.3f}%".format(disagreed_model1_correct_percent))
+    print ("Disagreed Model2 Correct Percentage: {:.3f}%".format(disagreed_model2_correct_percent))
+    print("=======================")
+    
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--label_path", required=True)
