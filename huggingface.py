@@ -230,6 +230,9 @@ class HuggingFaceClassifier(LightningModule):
         self.encoder.train()
         self.dropout = nn.Dropout(self.hparams.dropout)
 
+        if 'bin' in self.hparams.task_name:
+            self.hparams.output_dimension = 2
+
         if not self.hparams.comet_cn_train100k:
             self.linear = nn.Linear(self.encoder.dim, self.hparams.output_dimension)
             self.linear.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
@@ -1157,8 +1160,19 @@ class HuggingFaceClassifier(LightningModule):
         tokenizer_group.add_argument('--tokenizer_weight', type=str, default=None)
 
         task_group.add_argument('--task_name',
-                                choices=['socialiqa_X', 'alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr',
-                                         'physicaliqa_p25_v1', 'physicaliqa_p50_v1', 'physicaliqa_p75_v1', 'social_before_after'],
+                                choices=['socialiqa_X',
+                                         'alphanli',
+                                         'snli',
+                                         'hellaswag',
+                                         'physicaliqa',
+                                         'socialiqa',
+                                         'vcrqa',
+                                         'vcrqr',
+                                         'physicaliqa_p25_v1',
+                                         'physicaliqa_p50_v1',
+                                         'physicaliqa_p75_v1',
+                                         'social_before_after',
+                                         'physicalbinqa'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
                                 choices=['physicaliqa',
