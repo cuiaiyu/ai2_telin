@@ -550,6 +550,24 @@ physicaliqa:
       dropout: 0.1
       accumulate_grad_batches: 2
       max_nb_epochs: 3
+    lm_finetuned_entity_masking_kg3_nopad_nothehave_prob0p4_dc_cc_0214_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_multiword_kg1_nopad_nothehave_prob0p4_dc_cc_0214_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    lm_finetuned_entity_masking_multiword_kg1_nopad_nothehave_prob0p4_dc_0214_iter30k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
   default:
     seed: 42
     lr: 2e-5
