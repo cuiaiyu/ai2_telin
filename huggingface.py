@@ -847,6 +847,7 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform', None),
                                              shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             true_percentage=self.hparams.true_percentage_train,
                                              )
 
         if self.hparams.task_name2 is not None:
@@ -964,7 +965,9 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform',
                                                                                                           None),
-                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),)
+                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             true_percentage=self.hparams.true_percentage_test,
+                                             )
 
         if self.hparams.task_name2 is not None:
             cache_dirs2 = download(self.task_config[self.hparams.task_name2]['urls'], self.hparams.task_cache_dir)
@@ -1035,7 +1038,9 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform',
                                                                                                           None),
-                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),)
+                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             true_percentage=self.hparams.true_percentage_test,
+                                             )
 
         if self.hparams.task_name2 is not None:
             dataset2 = ClassificationDataset.load(cache_dir=self.hparams.test_input_dir2,
@@ -1187,6 +1192,9 @@ class HuggingFaceClassifier(LightningModule):
         task_group.add_argument('--kg_enhanced_finetuning', type=bool, required=False, default=False)
         task_group.add_argument('--comet_cn_train100k', type=bool, required=False, default=False)
         task_group.add_argument('--grad_interpret', type=bool, required=False, default=False)
+        task_group.add_argument('--true_percentage_train', type=float, required=False, default=None)
+        task_group.add_argument('--true_percentage_test', type=float, required=False, default=None)
+
         task_group.add_argument('--task_config_file', type=str, required=True)
         task_group.add_argument('--task_cache_dir', type=str, required=True)
 

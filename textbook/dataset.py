@@ -85,7 +85,7 @@ class ClassificationDataset(Dataset):
             cls, cache_dir: str, file_mapping: Dict, task_formula: str, type_formula: str,
             preprocessor: TokenizerLoader, pretokenized: bool = False,
             label_formula: str = None, label_offset: int = 0, label_transform: Dict = None, shuffle: bool = False,
-            task_id: int = None) -> ClassificationDataset:
+            task_id: int = None, true_percentage: int = None) -> ClassificationDataset:
         """
         Load the datase into a dataset class wrapper.
 
@@ -123,6 +123,17 @@ class ClassificationDataset(Dataset):
             x = x[0]
         else:
             x = os.path.join(cache_dir, file_mapping[x])
+
+        if true_percentage is not None:
+            assert true_percentage <= 1.0
+            if true_percentage < 1.0:
+                # TODO: 
+                from textbook.binqa_utils import binqa_true_percentage
+                print (x, file_mapping[y])
+                tp_jsonl_path, tp_labels_path, tp_dir = binqa_true_percentage(x, true_percentage)
+                x = tp_jsonl_path
+                cache_dir = '.'
+                file_mapping[y] = tp_labels_path
 
         with open(x) as input_file:
             tokens = []
@@ -235,6 +246,8 @@ class ClassificationDataset(Dataset):
             Maximum input length: {max(map(lambda e: max(map(len, e)), tokens))}
             99 % of input length: {sorted(map(lambda e: max(map(len, e)), tokens))[int(len(tokens) * .99)]}
         """)
+
+        assert len(input_ids) == len(labels)
 
         return ClassificationDataset(tokens, input_ids, token_type_ids, attention_mask, labels, task_id)
 
