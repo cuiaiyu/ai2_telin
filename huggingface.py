@@ -218,8 +218,8 @@ class HuggingFaceClassifier(LightningModule):
         if self.hparams.comet_cn_train100k:
             self.hparams.model_type = 'roberta_mlm'
         self.encoder = HuggingFaceModelLoader.load(self.hparams.model_type, self.hparams.model_weight)
-        print (self.encoder)
-        print (MODELS[self.hparams.model_type])
+        # print (self.encoder)
+        # print (MODELS[self.hparams.model_type])
         if self.hparams.comet_cn_train100k:
             self.lm_head = self.encoder.lm_head
             self.max_e1 = 10
@@ -286,6 +286,8 @@ class HuggingFaceClassifier(LightningModule):
             sequence_output = outputs[0]
             prediction_scores = self.lm_head(sequence_output)
             return prediction_scores
+        # FIXME: found can really do non mean pooling method
+        # output = outputs[0][:, 0, :]
         output = torch.mean(outputs[0], dim=1).squeeze()
         output = self.dropout(output)
         if self.hparams.task2_separate_fc and task_id == 2 and not self.hparams.comet_cn_train100k:
