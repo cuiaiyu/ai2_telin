@@ -235,7 +235,7 @@ class HuggingFaceClassifier(LightningModule):
 
         if not self.hparams.comet_cn_train100k:
             self.linear = nn.Linear(self.encoder.dim, self.hparams.output_dimension)
-            self.linear = nn.Linear(self.encoder.dim, 256)
+            # self.linear = nn.Linear(self.encoder.dim, 256)
             self.linear.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
             self.linear.bias.data.zero_()
             # if 'bin' in self.hparams.task_name:
