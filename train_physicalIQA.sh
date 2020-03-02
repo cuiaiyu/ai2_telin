@@ -10,7 +10,9 @@ MODEL_TYPE=roberta
 TASK_NAME=physicaliqa
 
 # MODEL_WEIGHT="large_roberta_bz4"
-MODEL_WEIGHT="large_roberta_bz4_accu2_kg_enhanced"
+# MODEL_WEIGHT="large_roberta_bz4_accu2_kg_enhanced"
+# MODEL_WEIGHT="large_roberta_bz2"
+MODEL_WEIGHT="large_roberta_bz4_accu2_new_sanity_checking"
 
 python3 -W ignore train.py --model_type $MODEL_TYPE --model_weight $MODEL_WEIGHT \
   --task_config_file config/tasks.yaml \
@@ -19,4 +21,4 @@ python3 -W ignore train.py --model_type $MODEL_TYPE --model_weight $MODEL_WEIGHT
   --task_cache_dir ./cache \
   --output_dir output/$MODEL_TYPE-$MODEL_WEIGHT-$TASK_NAME-pred \
   --log_save_interval 25 --row_log_interval 25 \
-  --kg_enhanced_finetuning true \
+  # --kg_enhanced_finetuning true \

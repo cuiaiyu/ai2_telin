@@ -342,6 +342,11 @@ class HuggingFaceClassifier(LightningModule):
         if not self.hparams.comet_cn_train100k:
 
             B, _, S = data_batch['input_ids'].shape
+            # print (data_batch['input_ids'], B, _, S)
+            if False:
+                for i in range(len(data_batch['input_ids'].reshape(-1, S))):
+                    dd = data_batch['input_ids'].reshape(-1, S)[i]
+                    print (self.tokenizer.tokenizer.decode(dd))
 
             ## TODO: special aug here
             if self.hparams.kg_enhanced_finetuning:
@@ -388,6 +393,12 @@ class HuggingFaceClassifier(LightningModule):
                 'task_id': 1 if not task2 else 2,
             })
             loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
+            # print (logits.reshape(B, -1))
+            if False:
+                lgt = logits.reshape(B, -1)
+                for i in range(len(lgt)):
+                    print ("log2:", lgt[i].size(), lgt[i], data_batch['y'].reshape(-1)[i])
+                print ('-'*50)
 
             # WARNING: If your loss is a scalar, add one dimension in the beginning for multi-gpu training!
             if self.trainer.use_dp:
@@ -830,18 +841,20 @@ class HuggingFaceClassifier(LightningModule):
     def configure_optimizers(self):
 
         # Prepare optimizer and schedule (linear warmup and decay)
-        t_total = len(self.train_dataloader) // self.hparams.accumulate_grad_batches * self.hparams.max_nb_epochs
+        # t_total = len(self.train_dataloader) // self.hparams.accumulate_grad_batches * self.hparams.max_nb_epochs
 
-        no_decay = ['bias', 'LayerNorm.weight']
-        optimizer_grouped_parameters = [
-            {'params': [p for n, p in self.named_parameters() if not any(nd in n for nd in no_decay)],
-             'weight_decay': self.hparams.weight_decay},
-            {'params': [p for n, p in self.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-        ]
-        optimizer = AdamW(optimizer_grouped_parameters, lr=self.hparams.learning_rate, eps=self.hparams.adam_epsilon)
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.hparams.warmup_steps, num_training_steps=t_total)
+        # no_decay = ['bias', 'LayerNorm.weight']
+        # optimizer_grouped_parameters = [
+        #     {'params': [p for n, p in self.named_parameters() if not any(nd in n for nd in no_decay)],
+        #      'weight_decay': self.hparams.weight_decay},
+        #     {'params': [p for n, p in self.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+        # ]
+        # optimizer = AdamW(optimizer_grouped_parameters, lr=self.hparams.learning_rate, eps=self.hparams.adam_epsilon)
+        optimizer = AdamW(self.parameters(), lr=self.hparams.learning_rate, eps=self.hparams.adam_epsilon)
+        # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.hparams.warmup_steps, num_training_steps=t_total)
 
-        return [optimizer], [scheduler]
+        return optimizer
+        # return [optimizer], [scheduler]
 
     @pl.data_loader
     def train_dataloader(self):
@@ -914,6 +927,7 @@ class HuggingFaceClassifier(LightningModule):
         return DataLoader(dataset,
                           collate_fn=self.collate_fn,
                           shuffle=True, batch_size=self.hparams.batch_size)
+                          # shuffle=False, batch_size=self.hparams.batch_size)
 
     def collate_fn(self, examples):
         """Padding examples into a batch."""
@@ -975,7 +989,8 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform',
                                                                                                           None),
-                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             # shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             shuffle=False,
                                              true_percentage=self.hparams.true_percentage_test,
                                              )
 
