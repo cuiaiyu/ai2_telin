@@ -292,8 +292,8 @@ class HuggingFaceClassifier(LightningModule):
             prediction_scores = self.lm_head(sequence_output)
             return prediction_scores
         # FIXME: found can really do non mean pooling method
-        output = outputs[0][:, 0, :]
-        # output = torch.mean(outputs[0], dim=1).squeeze()
+        # output = outputs[0][:, 0, :]
+        output = torch.mean(outputs[0], dim=1).squeeze()
         output = self.dropout(output)
         if self.hparams.task2_separate_fc and task_id == 2 and not self.hparams.comet_cn_train100k:
             logits = self.linear2(output)
@@ -376,7 +376,6 @@ class HuggingFaceClassifier(LightningModule):
                     sent_batch = sent_batch.cuda()
                     type_ids_batch = type_ids_batch.cuda()
                     attn_mask_batch = attn_mask_batch.cuda()
-                raise
 
             logits = self.forward(**{
                 'input_ids': data_batch['input_ids'].reshape(-1, S) \
