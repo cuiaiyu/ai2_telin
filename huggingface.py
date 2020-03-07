@@ -489,11 +489,12 @@ class HuggingFaceClassifier(LightningModule):
             })
 
             if self.hparams.grad_interpret:
-                print (data_batch['tokens'])
-                print (len(data_batch['tokens'][0][0]))
-                print (data_batch['input_ids'].shape)
+                interpret_data = {}
+                # print (data_batch['tokens'])
+                # print (len(data_batch['tokens'][0][0]))
+                # print (data_batch['input_ids'].shape)
                 loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
-                from interprets.interpret import SmoothGradient
+                from interprets.interpret import SmoothGradient, IntegratedGradient
                 def get_roberta_loss(model, data_batch, **kwargs):
                     B, _, S = data_batch['input_ids'].shape
                     logits = self.forward(**{
@@ -508,19 +509,30 @@ class HuggingFaceClassifier(LightningModule):
                 sg = SmoothGradient(self, embedding_layer=self.encoder.model.embeddings,
                     get_loss_func=get_roberta_loss, args=None)
                 grads = sg.saliency_interpret(data_batch, labels=data_batch['y'])
-                print (len(grads))
-                print (grads['grad_input_1_0'])
-                print (grads['grad_input_1_1'])
+                # ig = IntegratedGradient(self, embedding_layer=self.encoder.model.embeddings,
+                #     get_loss_func=get_roberta_loss, args=None)
+                # grads = ig.saliency_interpret(data_batch, labels=data_batch['y'])
+                # print (grads['grad_input_1_0'])
+                # print (grads['grad_input_1_1'])
                 keys = sorted(grads.keys())
                 for i in range(len(grads)):
                     key = keys[i]
-                    print (key)
+                    # print (key)
                     curr_grads = grads[key]
                     curr_tokens = data_batch['tokens'][0][i]
                     new_list = [(u, v) for u, v in zip(curr_grads, curr_tokens)]
                     print (sorted(new_list, reverse=True)[0:5])
-                print (self.tokenizer.tokenizer.convert_tokens_to_string(data_batch['tokens'][0][0]))
-                print (loss_val); raise
+                    qa_str = self.tokenizer.tokenizer.convert_tokens_to_string(data_batch['tokens'][0][i])
+                    interpret_data[key] = {}
+                    interpret_data[key]['qa_str'] = qa_str
+                    interpret_data[key]['tokens'] = curr_tokens
+                    interpret_data[key]['grads'] = curr_grads
+                    interpret_data[key]['sorted'] = sorted(new_list, reverse=True)
+                # print (self.tokenizer.tokenizer.convert_tokens_to_string(data_batch['tokens'][0][0]))
+                return {
+                    'batch_logits': logits.reshape(B, -1),
+                    'interpret_data': interpret_data,
+                }
 
             return {
                 'batch_logits': logits.reshape(B, -1),
@@ -729,6 +741,29 @@ class HuggingFaceClassifier(LightningModule):
         multi_dataset = False
         if type(outputs[0]) == list:
             multi_dataset = True
+
+        if self.hparams.grad_interpret:
+            fio =  open(os.path.join(self.hparams.output_dir, "interprets.txt"), "w")
+            fio.write('-'*50+'\n')
+            for o in outputs:
+                interpret_data = o['interpret_data']
+                for key in interpret_data:
+                    qa_str = interpret_data[key]['qa_str']
+                    curr_tokens = interpret_data[key]['tokens']
+                    curr_grads = interpret_data[key]['grads']
+                    sorted_grads = interpret_data[key]['sorted']
+                    fio.write(qa_str+'\n')
+                    fio.write('['+', '.join(curr_tokens)+']')
+                    fio.write('\n')
+                    curr_grads = [str(x) for x in curr_grads]
+                    fio.write('['+', '.join(curr_grads)+']')
+                    fio.write('\n')
+                    sorted_grads = ['('+str(u)+', '+str(v)+')' for u, v in sorted_grads]
+                    fio.write('['+', '.join(sorted_grads)+']')
+                    fio.write('\n')
+                    fio.write('.'*50+'\n')
+                fio.write('-'*50+'\n')
+            fio.close()
 
         if multi_dataset:
             logits = torch.cat([o[0]['batch_logits'] for o in outputs], dim=0).reshape(-1, outputs[0][0]['batch_logits'].shape[1])
