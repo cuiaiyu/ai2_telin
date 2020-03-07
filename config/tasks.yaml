@@ -263,3 +263,17 @@ social_before_after:
     dev:
       dev_x: "social_before_after-train-dev/dev.jsonl"
       dev_y: "social_before_after-train-dev/dev-labels.lst"
+physicalbinqa:
+  urls:
+    - "https://storage.googleapis.com/ai2-mosaic/public/physicalbinqa/physicalbinqa-train-dev.zip"
+  task_formula: "[CLS] goal [SEP] sol [SEP]"
+  type_formula: "0 0 0 1 1"
+  label_offset: 0
+  num_choices: 2
+  file_mapping:
+    train:
+      train_x: "physicalbinqa-train-dev/train.jsonl"
+      train_y: "physicalbinqa-train-dev/train-labels.lst"
+    dev:
+      dev_x: "physicalbinqa-train-dev/dev.jsonl"
+      dev_y: "physicalbinqa-train-dev/dev-labels.lst"

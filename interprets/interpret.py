@@ -133,17 +133,18 @@ class IntegratedGradient(object):
     def saliency_interpret(self, inputs, **kwargs):
         # Run integrated gradients
         grads = self._integrate_gradients(inputs, **kwargs)
+        new_grads = {}
 
         # Normalize results
         for key, grad in grads.items():
             # The [0] here is undo-ing the batching that happens in get_gradients.
-            embedding_grad = numpy.sum(grad[0], axis=1)
-            norm = numpy.linalg.norm(embedding_grad, ord=1)
-            normalized_grad = [math.fabs(e) / norm for e in embedding_grad]
-            grads[key] = normalized_grad
+            for i in range(len(grad)):
+                embedding_grad = numpy.sum(grad[i], axis=1)
+                norm = numpy.linalg.norm(embedding_grad, ord=1)
+                normalized_grad = [math.fabs(e) / norm for e in embedding_grad]
+                new_grads[key+"_{}".format(i)] = normalized_grad
 
-        print (grads['grad_input_1'])
-        return grads
+        return new_grads
 
     def _register_forward_hook(self, alpha: int, embeddings_list: List):
         """

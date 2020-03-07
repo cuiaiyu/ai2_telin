@@ -1,0 +1,219 @@
+physicalbinqa:
+  roberta:
+    large_roberta_bz4:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_bz4_accu2_linear2:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_bz8:
+      lr: 5e-6
+      batch_size: 8
+      dropout: 0.1
+      accumulate_grad_batches: 1
+      max_nb_epochs: 3
+    large_roberta_bz4_accu1_dp5:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.5
+      accumulate_grad_batches: 1
+      max_nb_epochs: 3
+    large_roberta_bz8_accu1_dp5:
+      lr: 5e-6
+      batch_size: 8
+      dropout: 0.5
+      accumulate_grad_batches: 1
+      max_nb_epochs: 3
+    large_roberta_bz4_accu2_dp5:
+      lr: 5e-6
+      batch_size: 8
+      dropout: 0.5
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train20dev20:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train20dev40:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train20dev50:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train20dev60:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train20dev80:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train40dev20:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train40dev40:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train40dev50:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train40dev60:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train40dev80:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train50dev20:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train50dev40:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train50dev50:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train50dev60:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train50dev80:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train60dev20:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train60dev40:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train60dev50:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train60dev60:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train60dev80:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train80dev20:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train80dev40:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train80dev50:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train80dev60:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    large_roberta_tp_train80dev80:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    binpiqa_lm_finetuned_entity_masking_nopad_nothehave_prob0p4_dc_cc_0214_iter50k:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    binpiqa_lm_finetuned_entity_masking_nopad_nothehave_prob0p4_dc_cc_0214_iter50k_nolinear2:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+    binpiqa_lm_finetuned_entity_masking_nopad_nothehave_prob0p4_dc_cc_0214_iter50k_nolinear2_w_cn_all_cs_single_fc:
+      lr: 5e-6
+      batch_size: 4
+      dropout: 0.1
+      accumulate_grad_batches: 2
+      max_nb_epochs: 3
+  default:
+    seed: 42
+    lr: 2e-5
+    dropout: 0.5
+    batch_size: 32
+    max_seq_len: 128
+    max_nb_epochs: 3
+    initializer_range: 0.02
+    weight_decay: 0.0
+    warmup_steps: 0
+    adam_epsilon: 1e-8
+    accumulate_grad_batches: 1
+    do_lower_case: false
