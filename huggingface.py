@@ -122,7 +122,8 @@ class HuggingFaceTokenizerLoader(TokenizerLoader):
     @classmethod
     def load(cls, model_type: str, model_weights: str, *args, **kargs) -> HuggingFaceTokenizerLoader:
         assert model_type in TOKENIZERS, f"Tokenizer model type {model_type} is not recognized."
-        tokenizer_dir = "large_roberta"
+        tokenizer_dir = "large_roberta" # remember to uncomment this line
+        # tokenizer_dir = "roberta-large" # just for local
         return HuggingFaceTokenizerLoader(
             TOKENIZERS[model_type].from_pretrained(tokenizer_dir, *args, cache_dir="./model_cache", **kargs))
 
@@ -217,8 +218,8 @@ class HuggingFaceClassifier(LightningModule):
         if self.hparams.comet_cn_train100k:
             self.hparams.model_type = 'roberta_mlm'
         self.encoder = HuggingFaceModelLoader.load(self.hparams.model_type, self.hparams.model_weight)
-        print (self.encoder)
-        print (MODELS[self.hparams.model_type])
+        # print (self.encoder)
+        # print (MODELS[self.hparams.model_type])
         if self.hparams.comet_cn_train100k:
             self.lm_head = self.encoder.lm_head
             self.max_e1 = 10
@@ -229,10 +230,18 @@ class HuggingFaceClassifier(LightningModule):
         self.encoder.train()
         self.dropout = nn.Dropout(self.hparams.dropout)
 
+        if 'bin' in self.hparams.task_name:
+            self.hparams.output_dimension = 2
+
         if not self.hparams.comet_cn_train100k:
             self.linear = nn.Linear(self.encoder.dim, self.hparams.output_dimension)
+            # self.linear = nn.Linear(self.encoder.dim, 256)
             self.linear.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
             self.linear.bias.data.zero_()
+            # if 'bin' in self.hparams.task_name:
+            #     self.linear2 = nn.Linear(256, self.hparams.output_dimension)
+            #     self.linear2.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
+            #     self.linear2.bias.data.zero_()
             if self.hparams.task2_separate_fc:
                 self.linear2 = nn.Linear(self.encoder.dim, self.hparams.output_dimension)
                 self.linear2.weight.data.normal_(mean=0.0, std=self.hparams.initializer_range)
@@ -245,6 +254,23 @@ class HuggingFaceClassifier(LightningModule):
         # TODO: Change it to your own tokenizer loader
         self.tokenizer = HuggingFaceTokenizerLoader.load(
             self.hparams.tokenizer_type, self.hparams.tokenizer_weight, do_lower_case=self.hparams.do_lower_case)
+
+        if self.hparams.kg_enhanced_finetuning:
+            import sys
+            sys.path.append('./kg_enhanced')
+            from kg_enhanced.legpt_utils import KG_Based_Masking
+            class ARGS(object):
+                def __init__(self):
+                    self.kg_datasets = ["concept_net_100k"]
+                    self.kg_multiword_matching = True
+                    self.num_sentences = -1
+                    self.mlm_probability = 0.8
+                    self.special_masking = "entity"
+                    self.max_num_kg_sample = 1
+                    self.kg_augment_with_pad = False
+                    self.data_root = "datasets"
+            self.kg_args = ARGS()
+            self.kg_augmentor = KG_Based_Masking(self.kg_args, self.tokenizer.tokenizer)
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, task_id=None):
 
@@ -265,12 +291,16 @@ class HuggingFaceClassifier(LightningModule):
             sequence_output = outputs[0]
             prediction_scores = self.lm_head(sequence_output)
             return prediction_scores
-        output = torch.mean(outputs[0], dim=1).squeeze()
+        # FIXME: found can really do non mean pooling method
+        output = outputs[0][:, 0, :]
+        # output = torch.mean(outputs[0], dim=1).squeeze()
         output = self.dropout(output)
         if self.hparams.task2_separate_fc and task_id == 2 and not self.hparams.comet_cn_train100k:
             logits = self.linear2(output)
         else:
             logits = self.linear(output)
+            # if 'bin' in self.hparams.task_name:
+            #     logits = self.linear2(logits)
 
         return logits.squeeze()
 
@@ -298,7 +328,6 @@ class HuggingFaceClassifier(LightningModule):
         return l
 
     def training_step(self, data_batch, batch_i):
-
         task2 = False
         if not self.hparams.comet_cn_train100k:
             if 'task_id' in data_batch:
@@ -314,10 +343,48 @@ class HuggingFaceClassifier(LightningModule):
 
             B, _, S = data_batch['input_ids'].shape
 
+            ## TODO: special aug here
+            if self.hparams.kg_enhanced_finetuning:
+                sent_ids_all = data_batch['input_ids'].reshape(-1, S)
+                type_ids_all = data_batch['token_type_ids'].reshape(-1, S)
+                attn_ids_all = data_batch['attention_mask'].reshape(-1, S)
+                aug_batch = self.kg_augmentor.batch_augemnt_kg_triplet_to_sent_ids(
+                    sent_ids_all, type_ids_all, attn_ids_all, False)
+                sent_batch, type_ids_batch, attn_mask_batch = aug_batch
+                if False:
+                    print ('-'*50)
+                    for i in range(len(sent_batch)):
+                        sent_ids_org = sent_ids_all[i]
+                        type_ids_org = type_ids_all[i]
+                        attn_ids_org = attn_ids_all[i]
+                        sent_ids = sent_batch[i]
+                        print (sent_ids_org)
+                        print (type_ids_org)
+                        print (attn_ids_org)
+                        print (sent_ids)
+                        org_sent = self.tokenizer.tokenizer.decode(sent_ids_org)
+                        print (org_sent)
+                        new_sent = self.tokenizer.tokenizer.decode(sent_ids)
+                        print (new_sent)
+                        type_ids = type_ids_batch[i]
+                        attn_ids = attn_mask_batch[i]
+                        print (self.tokenizer.tokenizer.tokenize(new_sent))
+                        print (type_ids)
+                        print (attn_ids)
+                        print ('-'*50)
+                if torch.cuda.is_available():
+                    sent_batch = sent_batch.cuda()
+                    type_ids_batch = type_ids_batch.cuda()
+                    attn_mask_batch = attn_mask_batch.cuda()
+                raise
+
             logits = self.forward(**{
-                'input_ids': data_batch['input_ids'].reshape(-1, S),
-                'token_type_ids': data_batch['token_type_ids'].reshape(-1, S),
-                'attention_mask': data_batch['attention_mask'].reshape(-1, S),
+                'input_ids': data_batch['input_ids'].reshape(-1, S) \
+                    if not self.hparams.kg_enhanced_finetuning else sent_batch,
+                'token_type_ids': data_batch['token_type_ids'].reshape(-1, S) \
+                    if not self.hparams.kg_enhanced_finetuning else type_ids_batch,
+                'attention_mask': data_batch['attention_mask'].reshape(-1, S) \
+                    if not self.hparams.kg_enhanced_finetuning else attn_mask_batch,
                 'task_id': 1 if not task2 else 2,
             })
             loss_val = self.loss(data_batch['y'].reshape(-1), logits.reshape(B, -1))
@@ -807,7 +874,7 @@ class HuggingFaceClassifier(LightningModule):
             {'params': [p for n, p in self.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
         optimizer = AdamW(optimizer_grouped_parameters, lr=self.hparams.learning_rate, eps=self.hparams.adam_epsilon)
-        scheduler = WarmupLinearSchedule(optimizer, warmup_steps=self.hparams.warmup_steps, t_total=t_total)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.hparams.warmup_steps, num_training_steps=t_total)
 
         return [optimizer], [scheduler]
 
@@ -825,6 +892,7 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform', None),
                                              shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             true_percentage=self.hparams.true_percentage_train,
                                              )
 
         if self.hparams.task_name2 is not None:
@@ -942,7 +1010,9 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform',
                                                                                                           None),
-                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),)
+                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             true_percentage=self.hparams.true_percentage_test,
+                                             )
 
         if self.hparams.task_name2 is not None:
             cache_dirs2 = download(self.task_config[self.hparams.task_name2]['urls'], self.hparams.task_cache_dir)
@@ -1013,7 +1083,9 @@ class HuggingFaceClassifier(LightningModule):
                                              label_offset=self.task_config[self.hparams.task_name].get('label_offset', 0),
                                              label_transform=self.task_config[self.hparams.task_name].get('label_transform',
                                                                                                           None),
-                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),)
+                                             shuffle=self.task_config[self.hparams.task_name].get('shuffle', False),
+                                             true_percentage=self.hparams.true_percentage_test,
+                                             )
 
         if self.hparams.task_name2 is not None:
             dataset2 = ClassificationDataset.load(cache_dir=self.hparams.test_input_dir2,
@@ -1028,8 +1100,7 @@ class HuggingFaceClassifier(LightningModule):
                                                                                                                 None),
                                                   shuffle=self.task_config[self.hparams.task_name2].get('shuffle', False),
                                                   task_id=2,)
-
-        self.hparams.batch_size = 1
+        self.hparams.batch_size = 12 # for some reason it has to be explicit
         print (self.hparams.batch_size)
         dataloader = DataLoader(dataset,
                                 collate_fn=self.collate_fn,
@@ -1139,8 +1210,19 @@ class HuggingFaceClassifier(LightningModule):
         tokenizer_group.add_argument('--tokenizer_weight', type=str, default=None)
 
         task_group.add_argument('--task_name',
-                                choices=['socialiqa_X', 'alphanli', 'snli', 'hellaswag', 'physicaliqa', 'socialiqa', 'vcrqa', 'vcrqr',
-                                         'physicaliqa_p25_v1', 'physicaliqa_p50_v1', 'physicaliqa_p75_v1'],
+                                choices=['socialiqa_X',
+                                         'alphanli',
+                                         'snli',
+                                         'hellaswag',
+                                         'physicaliqa',
+                                         'socialiqa',
+                                         'vcrqa',
+                                         'vcrqr',
+                                         'physicaliqa_p25_v1',
+                                         'physicaliqa_p50_v1',
+                                         'physicaliqa_p75_v1',
+                                         'social_before_after',
+                                         'physicalbinqa'],
                                 required=True)
         task_group.add_argument('--task_name2', default=None,
                                 choices=['physicaliqa',
@@ -1152,8 +1234,12 @@ class HuggingFaceClassifier(LightningModule):
                                          'cn_all_cs_30k'],
                                 required=False)
         task_group.add_argument('--task2_separate_fc', type=bool, required=False, default=False)
+        task_group.add_argument('--kg_enhanced_finetuning', type=bool, required=False, default=False)
         task_group.add_argument('--comet_cn_train100k', type=bool, required=False, default=False)
         task_group.add_argument('--grad_interpret', type=bool, required=False, default=False)
+        task_group.add_argument('--true_percentage_train', type=float, required=False, default=None)
+        task_group.add_argument('--true_percentage_test', type=float, required=False, default=None)
+
         task_group.add_argument('--task_config_file', type=str, required=True)
         task_group.add_argument('--task_cache_dir', type=str, required=True)
 

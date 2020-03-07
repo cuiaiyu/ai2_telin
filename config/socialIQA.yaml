@@ -1,3 +1,30 @@
+social_before_after:
+  roberta:
+    test:
+      seed: 42
+      lr: 5e-6
+      dropout: 0.5
+      batch_size: 8
+      max_seq_len: 128
+      max_nb_epochs: 3
+      initializer_range: 0.02
+      weight_decay: 0.0
+      warmup_steps: 0
+      adam_epsilon: 1e-8
+      accumulate_grad_batches: 2
+  default:
+    seed: 42
+    lr: 5e-6
+    dropout: 0.1
+    batch_size: 3
+    max_seq_len: 128
+    max_nb_epochs: 3
+    initializer_range: 0.02
+    weight_decay: 0.0
+    warmup_steps: 0
+    adam_epsilon: 1e-8
+    accumulate_grad_batches: 1
+    do_lower_case: false
 socialiqa_X:
   roberta:
     test:

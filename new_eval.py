@@ -34,6 +34,7 @@ def main(hparams):
         weights_path=hparams.weights_path,
         tags_csv=hparams.tags_csv,
         on_gpu=torch.cuda.is_available(),
+        # on_gpu=False,
         map_location=None
     )
 
@@ -42,9 +43,10 @@ def main(hparams):
 
     trainer = Trainer(gpus=1)
     results = []
+    print (torch.cuda.is_available(), device)
     for batch in DataLoader(
-            model.val_dataloader.dataset, sampler=RandomSampler(model.val_dataloader.dataset, replacement=True),
-            shuffle=False, batch_size=1, collate_fn=model.collate_fn):
+            model.val_dataloader.dataset, sampler=RandomSampler(model.val_dataloader.dataset, replacement=False),
+            shuffle=False, batch_size=8, collate_fn=model.collate_fn):
         # print(batch)
         batch["input_ids"] = batch["input_ids"].to(device)
         batch["attention_mask"] = batch["attention_mask"].to(device)
