@@ -4,8 +4,6 @@ TASK_NAME=physicaliqa
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v3_single_fc"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1"
 # MODEL_WEIGHT="baseline"
-<<<<<<< HEAD
-=======
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v3_contd"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd_v1"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_v1"
@@ -14,8 +12,9 @@ TASK_NAME=physicaliqa
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_30k"
 # MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256_v2"
 # MODEL_WEIGHT="baseline8"
->>>>>>> b421bdb6fdd7df48ccceb5e1ff60f08d8b3e977b
-MODEL_WEIGHT="lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc"
+# MODEL_WEIGHT="lm_with_dp_graphs_gtn1L_fcn_dpbatch1_multitask_beta_0p001_10000_bc"
+MODEL_WEIGHT="baseline_w_cn_all_cs_v1_contd2_maxlen256_v2"
+# MODEL_WEIGHT="baseline_p75_v2"
 
 # $PYTHON -W ignore eval.py --model_type $MODEL_TYPE \
 # $PYTHON -W ignore new_eval.py --model_type $MODEL_TYPE \
@@ -36,4 +35,6 @@ $PYTHON -W ignore analyze.py \
   --file_data ./cache/$TASK_NAME-test/$TASK_NAME-test/dev.jsonl \
   --file_pred output/$MODEL_TYPE-$MODEL_WEIGHT-$TASK_NAME-pred/predictions.lst \
   --prob_pred output/$MODEL_TYPE-$MODEL_WEIGHT-$TASK_NAME-pred/probabilities.lst \
-  --file_gt ./cache/$TASK_NAME-test/$TASK_NAME-test/dev-labels.lst
+  --file_gt ./cache/$TASK_NAME-test/$TASK_NAME-test/dev-labels.lst \
+  # --file_pred output/$MODEL_TYPE-$MODEL_WEIGHT-physicaliqa_p75_v1-pred/dev-predictions.lst \
+  # --prob_pred output/$MODEL_TYPE-$MODEL_WEIGHT-physicaliqa_p75_v1-pred/dev-probabilities.lst \
