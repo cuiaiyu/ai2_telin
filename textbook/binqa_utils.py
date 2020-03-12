@@ -35,19 +35,22 @@ def binqa_true_percentage(f, true_percentage):
     for i in range(len(raw_labels)):
         raw_labels[i] -= label_offset
 
-    assert sum(raw_labels) == len(raw_labels) // 2
+    # assert sum(raw_labels) == len(raw_labels) // 2
 
     print ("Total original T/F data poins: {}".format(len(raw_labels)))
     print ("Total original T   data poins: {}".format(sum(raw_labels)))
 
     # let T be X, we have X / X + F = true percentage (tp)
     # tp*X + tp* F = X => X = tp*F / (1-tp)
-    if true_percentage > 0.5:
-        len_T = len(raw_labels) // 2
+    true_labels_upper_bound_percentages = float(sum(raw_labels)) / float(len(raw_labels))
+    print ("True upper bound: {}".format(true_labels_upper_bound_percentages))
+
+    if true_percentage > true_labels_upper_bound_percentages:
+        len_T = sum(raw_labels)
         false_percentage = 1.0 - true_percentage
         len_F = false_percentage * len_T / (1.0 - false_percentage)
     else:
-        len_F = len(raw_labels) // 2
+        len_F = len(raw_labels) - sum(raw_labels)
         len_T = true_percentage * len_F / (1.0 - true_percentage)
     len_T, len_F = int(round(len_T, 0)), int(round(len_F, 0))
     print ("New Length of T: {}".format(len_T))
@@ -148,18 +151,21 @@ def balance_tp(f, tp_list=[20, 40, 50, 60, 80]):
     for i in range(len(raw_labels)):
         raw_labels[i] -= label_offset
 
-    assert sum(raw_labels) == len(raw_labels) // 2
+    # assert sum(raw_labels) == len(raw_labels) // 2
 
     print ("Total original T/F data poins: {}".format(len(raw_labels)))
     print ("Total original T   data poins: {}".format(sum(raw_labels)))
 
     min_tp = float(min_tp) / 100.0
-    if min_tp > 0.5:
-        len_T = len(raw_labels) // 2
+   
+    true_labels_upper_bound_percentages = float(sum(raw_labels)) / float(len(raw_labels))
+
+    if min_tp > true_labels_upper_bound_percentages:
+        len_T = sum(raw_labels)
         min_tp_f = 1.0 - min_tp
         len_F = min_tp_f * len_T / (1.0 - min_tp_f)
     else:
-        len_F = len(raw_labels) // 2
+        len_F = len(raw_labels) - sum(raw_labels)
         len_T = min_tp * len_F / (1.0 - min_tp)
     len_T, len_F = int(round(len_T, 0)), int(round(len_F, 0))
     print ("New Length of T: {}".format(len_T))
@@ -175,7 +181,7 @@ def balance_tp(f, tp_list=[20, 40, 50, 60, 80]):
 
     for tp in tp_list:
         tp_f = float(tp) / 100.0
-        len_T = int(round(max_total * tp_f, 0))
+        len_T = min(int(round(max_total * tp_f, 0)), len_T)
         len_F = max_total - len_T
         print ("TP: {}% Len: {}".format(tp, len_T))
         cut_data = []
@@ -203,7 +209,7 @@ def balance_tp(f, tp_list=[20, 40, 50, 60, 80]):
                     cnt_F += 1
             else:
                 raise
-         
+        
         assert sum(cut_labels) == len_T
         cnt_T, cnt_F = 0, 0
         for label in cut_labels:
@@ -239,10 +245,7 @@ def balance_tp(f, tp_list=[20, 40, 50, 60, 80]):
     return
 
 
-def tp_demo():
-    f = './cache/physicalbinqa-train-dev/physicalbinqa-train-dev/dev.jsonl'
-
-    true_percentage = 0.8
+def tp_demo(f, true_percentage):
     binqa_true_percentage(f, true_percentage)
 
     """
@@ -252,9 +255,20 @@ def tp_demo():
     true_percentage = 0.5
     binqa_true_percentage(f, true_percentage)
     """
+    return None
 
 
 if __name__ == "__main__":
     f = './cache/physicalbinqa-train-dev/physicalbinqa-train-dev/train.jsonl'
-    # f = './cache/physicalbinqa-train-dev/physicalbinqa-train-dev/dev.jsonl'
-    balance_tp(f)
+    f = './cache/physicalbinqa-train-dev/physicalbinqa-train-dev/dev.jsonl'
+
+    f = './cache/socialbinqa-train-dev/socialbinqa-train-dev/train.jsonl'
+    f = './cache/socialbinqa-train-dev/socialbinqa-train-dev/dev.jsonl'
+
+    tp_demo(f, 0.2)
+    tp_demo(f, 0.4)
+    tp_demo(f, 0.5)
+    tp_demo(f, 0.6)
+    tp_demo(f, 0.8)
+
+    # balance_tp(f)
